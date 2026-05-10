@@ -1,0 +1,243 @@
+{
+  "model": "gpt-4.1-nano",
+  "n_scenarios": 10,
+  "avg_decision_correctness": 0.75,
+  "avg_tool_usage": 0.927,
+  "avg_financial_accuracy": 0.55,
+  "avg_communication_quality": 0.53,
+  "avg_combined": 0.722,
+  "by_difficulty": {
+    "easy": {
+      "count": 4,
+      "avg_combined": 0.656,
+      "avg_decision": 0.675,
+      "avg_tools": 0.893,
+      "avg_financial": 0.5,
+      "avg_communication": 0.375
+    },
+    "hard": {
+      "count": 6,
+      "avg_combined": 0.767,
+      "avg_decision": 0.8,
+      "avg_tools": 0.95,
+      "avg_financial": 0.583,
+      "avg_communication": 0.633
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "H01",
+      "scenario_name": "Simple apparel return within window (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Your return has been successfully processed, and a full refund of $89.99 has been issued to your credit card. You should see the refund reflected in your account within 5-7 business days. If you have ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H02",
+      "scenario_name": "Lost package claim (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.25,
+      "combined": 0.519,
+      "error": null,
+      "response_preview": "Your refund of $89.99 has been successfully processed for your Wireless Headphones due to non-delivery. You should receive a confirmation email shortly. The refund will be credited to your original pa",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H03",
+      "scenario_name": "Cancel unshipped order (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.714,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.0,
+      "combined": 0.179,
+      "error": null,
+      "response_preview": "You're welcome! If you have any more questions or need further assistance in the future, don't hesitate to reach out. Have a great day!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H04",
+      "scenario_name": "Defective item refund (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.95,
+      "error": null,
+      "response_preview": "Your refund of $59.99 has been successfully processed for the defective Electric Kettle. The amount will be credited back to your credit card within 5-7 business days. If you need further assistance, ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H05",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.985,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.8,
+      "combined": 0.976,
+      "error": null,
+      "response_preview": "Your replacement mechanical keyboard has been successfully arranged. The refund of $129.99 will be credited back to your credit card, and the new keyboard will be shipped once it is back in stock. You",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "check_inventory",
+        "check_inventory",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H06",
+      "scenario_name": "Underclaim entitlement: customer asks for less than owed (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.4,
+      "combined": 0.534,
+      "error": null,
+      "response_preview": "Your request for a $30 store credit for the defective Premium Yoga Mat has been processed. You will receive a store credit of $89.99, which is the full amount of the item. The credit will be applied t",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H07",
+      "scenario_name": "Mixed order: refund one, deny sale item (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.9,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.92,
+      "error": null,
+      "response_preview": "Your return for the Mechanical Keyboard has been successfully processed. You will receive a refund of $120.24 to your debit card within 5-7 business days. \n\nThe Urban Sneakers, being a final sale item",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H08",
+      "scenario_name": "Late delivery extends window: denied becomes eligible (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 1.0,
+      "combined": 0.875,
+      "error": null,
+      "response_preview": "Your return request has been successfully processed. You will receive a refund of $254.99 to your credit card. A restocking fee of $45.00 has been applied due to your change of mind. Since the deliver",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H09",
+      "scenario_name": "Status mismatch: 'return' on processing must become cancellation (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.4,
+      "combined": 0.534,
+      "error": null,
+      "response_preview": "Your order has been successfully canceled, and full refunds have been issued for both the Bluetooth Speaker and the Canvas Tote Bag since the order had not yet shipped. You should receive a confirmati",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H10",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final) (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.76,
+      "error": null,
+      "response_preview": "Your refund of $119.99 for the Running Jacket has been successfully processed and will be credited back to your credit card within 5-7 business days. If you have any other questions or need further as",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    }
+  ]
+}

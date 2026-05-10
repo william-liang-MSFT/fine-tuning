@@ -1,0 +1,254 @@
+{
+  "model": "gpt-4.1-nano",
+  "n_scenarios": 10,
+  "avg_decision_correctness": 0.7,
+  "avg_tool_usage": 0.869,
+  "avg_financial_accuracy": 0.475,
+  "avg_communication_quality": 0.46,
+  "avg_combined": 0.662,
+  "by_difficulty": {
+    "easy": {
+      "count": 4,
+      "avg_combined": 0.723,
+      "avg_decision": 0.85,
+      "avg_tools": 0.832,
+      "avg_financial": 0.5,
+      "avg_communication": 0.5
+    },
+    "hard": {
+      "count": 6,
+      "avg_combined": 0.621,
+      "avg_decision": 0.6,
+      "avg_tools": 0.893,
+      "avg_financial": 0.458,
+      "avg_communication": 0.433
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "H01",
+      "scenario_name": "Simple apparel return within window (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Your refund of $89.99 for the Merino Wool Sweater has been successfully processed. You should receive the amount back to your credit card within 5-7 business days. If you have any more questions or ne",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H02",
+      "scenario_name": "Lost package claim (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.614,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.25,
+      "combined": 0.459,
+      "error": null,
+      "response_preview": "The refund for your Wireless Headphones has been successfully processed. You will receive a confirmation email shortly, and the amount will be credited to your original payment method within 5-7 busin",
+      "actual_tools": [
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H03",
+      "scenario_name": "Cancel unshipped order (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.714,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.5,
+      "combined": 0.509,
+      "error": null,
+      "response_preview": "Your order has been successfully canceled, and a full refund will be issued to your credit card. You should receive a confirmation email shortly. If you need further assistance, feel free to ask!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H04",
+      "scenario_name": "Defective item refund (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.95,
+      "error": null,
+      "response_preview": "Your refund of $59.99 has been successfully processed for the defective Electric Kettle. The amount will be credited back to your credit card within 5-7 business days. If you need any further assistan",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H05",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.871,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 0.968,
+      "error": null,
+      "response_preview": "Your replacement for the defective mechanical keyboard has been successfully processed. You will receive a new keyboard at no cost, and the refund amount of $129.99 has been credited back to your cred",
+      "actual_tools": [
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_inventory",
+        "calculate_resolution",
+        "check_inventory",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H06",
+      "scenario_name": "Underclaim entitlement: customer asks for less than owed (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.967,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.4,
+      "combined": 0.687,
+      "error": null,
+      "response_preview": "The store credit of $69.99 has been successfully issued for your damaged Premium Yoga Mat. You will receive a confirmation email shortly. If you need further assistance, feel free to ask!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "check_resolution_policy",
+        "get_order_details",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H07",
+      "scenario_name": "Mixed order: refund one, deny sale item (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.662,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.0,
+      "combined": 0.165,
+      "error": null,
+      "response_preview": "It appears that I couldn't locate the specific items in the order details. To assist you further, could you please confirm the item IDs or provide more details? Alternatively, I can help you with the ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy"
+      ]
+    },
+    {
+      "scenario_id": "H08",
+      "scenario_name": "Late delivery extends window: denied becomes eligible (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.25,
+      "communication_quality": 0.2,
+      "combined": 0.613,
+      "error": null,
+      "response_preview": "The $10 shipping credit for the late delivery of your Smart Watch has been successfully processed. You should receive a confirmation email shortly. If you need further assistance, feel free to ask!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H09",
+      "scenario_name": "Status mismatch: 'return' on processing must become cancellation (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.4,
+      "combined": 0.534,
+      "error": null,
+      "response_preview": "Your cancellation and refund request for both the Bluetooth speaker and the Canvas Tote Bag have been successfully processed. You should receive the refunds within 5-7 business days. \n\nIf you need any",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H10",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final) (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.76,
+      "error": null,
+      "response_preview": "Your refund request for the Running Jacket has been successfully processed. You will receive a full refund of $119.99 to your credit card within 5-7 business days. If you need any further assistance, ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    }
+  ]
+}

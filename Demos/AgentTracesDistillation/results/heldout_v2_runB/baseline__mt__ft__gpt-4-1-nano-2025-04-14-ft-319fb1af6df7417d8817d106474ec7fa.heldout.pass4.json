@@ -1,0 +1,254 @@
+{
+  "model": "gpt-4-1-nano-2025-04-14-ft-319fb1af6df7417d8817d106474ec7fa",
+  "n_scenarios": 10,
+  "avg_decision_correctness": 0.92,
+  "avg_tool_usage": 0.967,
+  "avg_financial_accuracy": 0.767,
+  "avg_communication_quality": 0.75,
+  "avg_combined": 0.876,
+  "by_difficulty": {
+    "easy": {
+      "count": 4,
+      "avg_combined": 0.886,
+      "avg_decision": 0.925,
+      "avg_tools": 0.964,
+      "avg_financial": 0.75,
+      "avg_communication": 0.875
+    },
+    "hard": {
+      "count": 6,
+      "avg_combined": 0.87,
+      "avg_decision": 0.917,
+      "avg_tools": 0.968,
+      "avg_financial": 0.778,
+      "avg_communication": 0.667
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "H01",
+      "scenario_name": "Simple apparel return within window (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 1.0,
+      "error": null,
+      "response_preview": "Your return for the Merino Wool Sweater has been successfully submitted.\n\n**Order:** ORD-H01  \n**Item:** Merino Wool Sweater (LI-H01)  \n**Reason:** Doesn\u2019t fit  \n**Refund amount:** $89.99  \n**Restocki",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H02",
+      "scenario_name": "Lost package claim (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Your refund for the lost Wireless Headphones (Order ID: ORD-H02) has been submitted successfully.\n\n**Refund Details:**\n- Item: Wireless Headphones\n- Refund amount: **$149.99**\n- Restocking fee: **$0.0",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H03",
+      "scenario_name": "Cancel unshipped order (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 1.0,
+      "combined": 0.594,
+      "error": null,
+      "response_preview": "Your cancellation request for order ORD-H03 has been successfully submitted. Here are the details:\n\n- Items canceled: Mechanical Keyboard and Canvas Tote Bag\n- Refund amount: $178.18\n- Restocking fees",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H04",
+      "scenario_name": "Defective item refund (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Your refund for the defective Electric Kettle has been successfully submitted. Here are the details:\n\n- Refund amount: **$59.99** to your credit card\n- Restocking fee: **$0.00** (no fee for defective ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H05",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.667,
+      "communication_quality": 1.0,
+      "combined": 0.917,
+      "error": null,
+      "response_preview": "Your replacement request for the defective Mechanical Keyboard (order ID ORD-H11) has been submitted successfully.\n\n**Summary:**\n- **Replacement item:** Mechanical Keyboard (SKU: P002-RGB)\n- **Refund ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H06",
+      "scenario_name": "Underclaim entitlement: customer asks for less than owed (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.4,
+      "combined": 0.695,
+      "error": null,
+      "response_preview": "Your refund for the damaged Premium Yoga Mat from order ORD-H12 has been successfully submitted.\n\n**Confirmation ID:** RES-F64F923D\n\n**Details:**\n- Refund amount: **$69.99**\n- Restocking fee: **$0.00*",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H07",
+      "scenario_name": "Mixed order: refund one, deny sale item (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.9,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.8,
+      "combined": 0.94,
+      "error": null,
+      "response_preview": "The return for your Mechanical Keyboard has been successfully submitted.\n\n**Details:**\n- Item: Mechanical Keyboard\n- Return reason: Changed mind\n- Refund amount: **$120.24**\n- Restocking fee: **$9.75*",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H08",
+      "scenario_name": "Late delivery extends window: denied becomes eligible (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 1.0,
+      "combined": 0.875,
+      "error": null,
+      "response_preview": "Your return for the Smart Watch (item LI-H08) has been successfully submitted.\n\n**Refund details:**\n- Refund amount: **$299.99**\n- Restocking fee: **$45.00** (15%)\n- Total net refund: **$254.99**\n\n**I",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H09",
+      "scenario_name": "Status mismatch: 'return' on processing must become cancellation (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.96,
+      "error": null,
+      "response_preview": "Your cancellations for order ORD-H09 have been successfully submitted.\n\n**Confirmation ID:** RES-8214CF6F\n\n**Refund details:**\n- Bluetooth Speaker: $79.99\n- Canvas Tote Bag: $34.99\n\n**Total refund:** ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H10",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final) (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.9,
+      "tool_usage": 0.81,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.2,
+      "combined": 0.832,
+      "error": null,
+      "response_preview": "I\u2019m unable to generate the return label directly. Please check your email for the return shipping label from Zava, or visit the Zava returns portal at https://zava.com/returns to print it.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution"
+      ]
+    }
+  ]
+}

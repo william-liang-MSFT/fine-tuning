@@ -1,0 +1,259 @@
+{
+  "model": "gpt-5.4",
+  "n_scenarios": 10,
+  "avg_decision_correctness": 0.92,
+  "avg_tool_usage": 0.991,
+  "avg_financial_accuracy": 0.75,
+  "avg_communication_quality": 0.76,
+  "avg_combined": 0.879,
+  "by_difficulty": {
+    "easy": {
+      "count": 4,
+      "avg_combined": 0.954,
+      "avg_decision": 1.0,
+      "avg_tools": 1.0,
+      "avg_financial": 0.917,
+      "avg_communication": 0.75
+    },
+    "hard": {
+      "count": 6,
+      "avg_combined": 0.829,
+      "avg_decision": 0.867,
+      "avg_tools": 0.985,
+      "avg_financial": 0.639,
+      "avg_communication": 0.767
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "H01",
+      "scenario_name": "Simple apparel return within window (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.667,
+      "communication_quality": 1.0,
+      "combined": 0.917,
+      "error": null,
+      "response_preview": "Done \u2014 your refund has been submitted.\n\nDetails\n- Item: Merino Wool Sweater\n- Reason: doesn\u2019t fit\n- Refund amount: $89.99\n- Restocking fee: $0.00\n- Refund method: original credit card\n\nConfirmation\n- ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H02",
+      "scenario_name": "Lost package claim (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.95,
+      "error": null,
+      "response_preview": "Done \u2014 your refund has been submitted.\n\nFor **LI-H02 \u2014 Wireless Headphones**:\n- **Reason:** Package lost in transit\n- **Resolution:** **Full refund**\n- **Refund amount:** **$149.99**\n- **Fees:** **$0.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H03",
+      "scenario_name": "Cancel unshipped order (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Done \u2014 your cancellation has been submitted successfully.\n\nResolution details:\n- Mechanical Keyboard: refund $129.99\n- Canvas Tote Bag: refund $34.99\n- Restocking fees: $0.00\n- Total refund: $164.98\n-",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H04",
+      "scenario_name": "Defective item refund (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Done \u2014 your refund has been submitted.\n\nFor **Electric Kettle (LI-H04)**\n- Resolution: **Full refund approved**\n- Refund amount: **$59.99**\n- Restocking fee: **$0.00**\n- Refund method: **Original cred",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H05",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.912,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 0.978,
+      "error": null,
+      "response_preview": "I checked your order, and there\u2019s an important update:\n\n- Item: Mechanical Keyboard (RGB)\n- Status: delivered on 2026-07-06\n- Defect claim: eligible\n- Restocking fee: $0.00\n- Prepaid return label: yes",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory"
+      ]
+    },
+    {
+      "scenario_id": "H06",
+      "scenario_name": "Underclaim entitlement: customer asks for less than owed (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.4,
+      "combined": 0.82,
+      "error": null,
+      "response_preview": "Done \u2014 your resolution has been submitted.\n\nFor **LI-H12 \u2014 Premium Yoga Mat**:\n- **Store credit:** **$69.99**\n- **Restocking fee:** **$0.00**\n- **Late delivery shipping credit:** **$10.00**\n- **Total ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H07",
+      "scenario_name": "Mixed order: refund one, deny sale item (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.8,
+      "combined": 0.855,
+      "error": null,
+      "response_preview": "Done \u2014 your keyboard return has been processed.\n\nSummary:\n- **Mechanical Keyboard**: Refund approved\n  - Item price: **$129.99**\n  - Restocking fee: **$9.75** (7.5%)\n  - **Net refund: $120.24**\n  - Re",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H08",
+      "scenario_name": "Late delivery extends window: denied becomes eligible (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 1.0,
+      "combined": 0.875,
+      "error": null,
+      "response_preview": "Done \u2014 your return has been submitted.\n\nConfirmation\n- Resolution ID: RES-D2B5B376\n\nSmart Watch resolution\n- Refund to original credit card: $254.99\n- Restocking fee: $45.00\n- Late delivery shipping c",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H09",
+      "scenario_name": "Status mismatch: 'return' on processing must become cancellation (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.8,
+      "combined": 0.855,
+      "error": null,
+      "response_preview": "Done \u2014 your cancellation/refund has been submitted.\n\nSummary:\n- Bluetooth Speaker: $79.99 refund\n- Canvas Tote Bag: $34.99 refund\n- Restocking fees: $0.00\n- Total refund: $114.98\n- Refund method: PayP",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H10",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final) (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.333,
+      "communication_quality": 0.6,
+      "combined": 0.593,
+      "error": null,
+      "response_preview": "Your return has been submitted.\n\nDetails:\n- Item: Running Jacket\n- Resolution: refund\n- Refund amount: $119.99\n- Restocking fee: $0.00\n- Refund method: original credit card\n\nConfirmation:\n- Resolution",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    }
+  ]
+}

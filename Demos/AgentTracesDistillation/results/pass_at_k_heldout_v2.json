@@ -1,0 +1,39 @@
+{
+  "tau": 0.7,
+  "n_scenarios": 10,
+  "n_passes": 5,
+  "humaneval": {
+    "pass@1": {
+      "student": 0.52,
+      "ft": 0.62,
+      "teacher": 0.9400000000000001
+    },
+    "pass@2": {
+      "student": 0.63,
+      "ft": 0.78,
+      "teacher": 0.99
+    },
+    "pass@3": {
+      "student": 0.6599999999999999,
+      "ft": 0.8699999999999999,
+      "teacher": 1.0
+    }
+  },
+  "cumulative": {
+    "pass@1": {
+      "student": 0.5,
+      "ft": 0.6,
+      "teacher": 1.0
+    },
+    "pass@2": {
+      "student": 0.6,
+      "ft": 0.7,
+      "teacher": 1.0
+    },
+    "pass@3": {
+      "student": 0.6,
+      "ft": 0.9,
+      "teacher": 1.0
+    }
+  }
+}

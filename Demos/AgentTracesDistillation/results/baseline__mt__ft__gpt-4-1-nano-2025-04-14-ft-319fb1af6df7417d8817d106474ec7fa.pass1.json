@@ -1,0 +1,666 @@
+{
+  "model": "gpt-4-1-nano-2025-04-14-ft-319fb1af6df7417d8817d106474ec7fa",
+  "n_scenarios": 30,
+  "avg_decision_correctness": 0.675,
+  "avg_tool_usage": 0.945,
+  "avg_financial_accuracy": 0.834,
+  "avg_communication_quality": 0.531,
+  "avg_combined": 0.768,
+  "by_difficulty": {
+    "easy": {
+      "count": 5,
+      "avg_combined": 0.939,
+      "avg_decision": 0.94,
+      "avg_tools": 1.0,
+      "avg_financial": 1.0,
+      "avg_communication": 0.633
+    },
+    "medium": {
+      "count": 5,
+      "avg_combined": 0.597,
+      "avg_decision": 0.2,
+      "avg_tools": 0.967,
+      "avg_financial": 1.0,
+      "avg_communication": 0.25
+    },
+    "hard": {
+      "count": 20,
+      "avg_combined": 0.768,
+      "avg_decision": 0.728,
+      "avg_tools": 0.926,
+      "avg_financial": 0.751,
+      "avg_communication": 0.576
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "T01",
+      "scenario_name": "Simple apparel return within window",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 1.0,
+      "error": null,
+      "response_preview": "Your refund for the Merino Wool Sweater has been submitted successfully.\n\n**Order:** ORD-001  \n**Item:** LI-001 \u2014 Merino Wool Sweater  \n**Refund Amount:** $89.99  \n**Reason:** Doesn\u2019t fit  \n**Restocki",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T02",
+      "scenario_name": "Order status check only",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.0,
+      "combined": 0.9,
+      "error": null,
+      "response_preview": "You're welcome! I'm glad everything looks good. If you decide to proceed with a return, exchange, or store credit for any item, just let me know. I'm here to help whenever you're ready.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy"
+      ]
+    },
+    {
+      "scenario_id": "T03",
+      "scenario_name": "Lost package claim",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.83,
+      "error": null,
+      "response_preview": "Your replacement yoga mat for order ORD-006 has been successfully submitted. Here are the details:\n\n- Item: Premium Yoga Mat\n- Resolution: Replacement\n- Refund amount: $69.99\n- Restocking fee: $0.00\n-",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T04",
+      "scenario_name": "Cancel unshipped order",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.667,
+      "combined": 0.967,
+      "error": null,
+      "response_preview": "Your cancellation request for order ORD-012 has been submitted successfully.\n\n- Refund amount: **$164.98**\n- Refund method: **original credit card**\n- Restocking fees: **$0.00**\n\nYou will receive a co",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T05",
+      "scenario_name": "Defective item return",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 1.0,
+      "error": null,
+      "response_preview": "Your return for the defective LED Desk Lamp (item LI-005) has been successfully submitted.\n\nHere are the details:\n- Refund amount: $45.99\n- Restocking fee: $0\n- Shipping credit: $10 (for late delivery",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T06",
+      "scenario_name": "Gold tier extended window",
+      "difficulty": "medium",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.75,
+      "combined": 0.975,
+      "error": null,
+      "response_preview": "Your return for the Running Jacket has been submitted successfully.\n\n- Refund amount: **$119.99**\n- Restocking fee: **$0.00**\n- Shipping credit: **$0.00**\n- Total resolution amount: **$119.99**\n\nYou\u2019l",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T07",
+      "scenario_name": "Sale item not returnable",
+      "difficulty": "medium",
+      "decision_correctness": 0.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.0,
+      "combined": 0.5,
+      "error": null,
+      "response_preview": "You're welcome. If you have any other questions or need further assistance, just let me know.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy"
+      ]
+    },
+    {
+      "scenario_id": "T08",
+      "scenario_name": "Platinum still denied past window",
+      "difficulty": "medium",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.833,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.508,
+      "error": null,
+      "response_preview": "The $10 shipping credit for your Electric Kettle order ORD-008 has been successfully submitted.\n\nYou will receive a confirmation email shortly. The credit should be processed within 5-7 business days.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T09",
+      "scenario_name": "Opened personal care denial",
+      "difficulty": "medium",
+      "decision_correctness": 0.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.0,
+      "combined": 0.5,
+      "error": null,
+      "response_preview": "You\u2019re welcome! If you have any other questions or need further assistance, just let me know.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy"
+      ]
+    },
+    {
+      "scenario_id": "T10",
+      "scenario_name": "Mixed order: one refund, one denied",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.8,
+      "combined": 0.98,
+      "error": null,
+      "response_preview": "The return for your Mechanical Keyboard from order ORD-003 has been successfully submitted.\n\nHere are the details:\n- Refund amount: **$120.24** to your original debit card\n- Restocking fee: **$9.75**\n",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T11",
+      "scenario_name": "Late delivery multi-item: refund + deny + credits",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.6,
+      "combined": 0.635,
+      "error": null,
+      "response_preview": "Your refund for the defective LED Desk Lamp (item LI-005) has been successfully submitted. Here are the details:\n\n- **Refund amount:** $45.99\n- **Restocking fee:** $0.00\n- **Late delivery shipping cre",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T12",
+      "scenario_name": "Exchange out of stock - suggest alternatives",
+      "difficulty": "hard",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.821,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.505,
+      "error": null,
+      "response_preview": "Your replacement for the Smart Watch has been successfully submitted.\n\n- **Item:** Smart Watch\n- **Reason:** Glitching screen (defective)\n- **Refund amount:** $299.99\n- **Restocking fee:** $0.00 (waiv",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "check_resolution_policy",
+        "get_fulfillment_status",
+        "get_order_details",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T13",
+      "scenario_name": "Multi-item: refund one + exchange another",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.4,
+      "combined": 0.94,
+      "error": null,
+      "response_preview": "The resolution has been submitted successfully.\n\nConfirmation ID: **RES-56517AA0**\n\nWhat happens next:\n- You\u2019ll get a confirmation email at noah.brown@example.com.\n- The refund of $79.99 will be proce",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_inventory",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T14",
+      "scenario_name": "Late delivery extends window: denied becomes eligible",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 1.0,
+      "combined": 0.875,
+      "error": null,
+      "response_preview": "Your return for the Smart Watch has been successfully submitted. Here are the details:\n\n- **Item:** Smart Watch (LI-007)\n- **Reason:** Changed mind\n- **Refund amount:** $299.99\n- **Restocking fee:** $",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T15",
+      "scenario_name": "Ambiguous request - needs clarification",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.75,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.333,
+      "combined": 0.871,
+      "error": null,
+      "response_preview": "That sounds good. Once you find the correct order ID, just share it here along with the item ID and reason, and I\u2019ll help you process the return.",
+      "actual_tools": [
+        "get_order_details",
+        "get_order_details",
+        "get_order_details",
+        "get_order_details"
+      ]
+    },
+    {
+      "scenario_id": "T16",
+      "scenario_name": "Confirmation gate \u2014 customer rescinds, must NOT submit",
+      "difficulty": "hard",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.857,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.4,
+      "combined": 0.504,
+      "error": null,
+      "response_preview": "Your return for the Merino Wool Sweater from order ORD-001 has been successfully submitted.\n\n- Reason: Doesn\u2019t fit\n- Refund amount: $89.99\n- Restocking fee: $0.00\n- Total resolution amount: $89.99\n\nYo",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T17",
+      "scenario_name": "Bogus order ID \u2014 error handling without hallucination",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.96,
+      "error": null,
+      "response_preview": "Sorry, I still can\u2019t find that order. If you want, share the item name or SKU, and I\u2019ll see what I can do.",
+      "actual_tools": [
+        "get_order_details",
+        "get_order_details",
+        "get_order_details"
+      ]
+    },
+    {
+      "scenario_id": "T18",
+      "scenario_name": "Triple-order one-shot: refund + refund + cancellation",
+      "difficulty": "hard",
+      "decision_correctness": 0.75,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.6,
+      "communication_quality": 0.429,
+      "combined": 0.743,
+      "error": null,
+      "response_preview": "I\u2019ve completed the cancellations and refunds for all items:\n\n**Order ORD-003 (Mechanical Keyboard)**\n- Refund: $129.99\n- Restocking fee: $9.75\n- Net refund: $120.24\n\n**Order ORD-007 (Running Jacket)**",
+      "actual_tools": [
+        "get_order_details",
+        "get_order_details",
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "calculate_resolution",
+        "calculate_resolution",
+        "submit_resolution",
+        "submit_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T19",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.985,
+      "financial_accuracy": 0.667,
+      "communication_quality": 0.8,
+      "combined": 0.773,
+      "error": null,
+      "response_preview": "Your refund for the Smart Watch (Order ID: ORD-005, item LI-007) has been successfully submitted.\n\n- **Refund amount:** $299.99\n- **Restocking fee:** $0.00\n- **Total resolution amount:** $299.99\n\nThe ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_inventory",
+        "check_resolution_policy",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T20",
+      "scenario_name": "Status mismatch: 'return' on a processing item must become cancellation",
+      "difficulty": "hard",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.714,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.0,
+      "combined": 0.179,
+      "error": null,
+      "response_preview": "You're welcome! If you have any more questions or need further assistance, feel free to reach out. Have a great day!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T21",
+      "scenario_name": "Buried ask: extract the request from emotional rambling",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.96,
+      "error": null,
+      "response_preview": "Your refund for the lost yoga mat (item LI-008) has been submitted. Here are the details:\n\n- Refund amount: $69.99\n- Restocking fee: $0.00\n- Return shipment: Not required\n- Resolution ID: RES-D3A22804",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T22",
+      "scenario_name": "Customer underclaims: must offer full entitlement, not literal request",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.5,
+      "combined": 0.825,
+      "error": null,
+      "response_preview": "Your request for a refund of the broken LED Desk Lamp has been submitted successfully.\n\n**Details:**\n- **Item:** LED Desk Lamp (LI-005)\n- **Refund Amount:** $45.99\n- **Restocking Fee:** $0.00\n- **Tota",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T23",
+      "scenario_name": "Negation handling: 'return everything except the speaker'",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.976,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.954,
+      "error": null,
+      "response_preview": "The resolution has been submitted successfully.\n\nSummary:\n- Return hiking boots (LI-012) for a refund of $159.99\n- Keep Bluetooth speaker (LI-013)\n\nConfirmation ID: RES-AEACBD72\n\nYour refund will be p",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T24",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final)",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.714,
+      "combined": 0.771,
+      "error": null,
+      "response_preview": "Your refund for the Running Jacket has been submitted successfully.\n\n- Refund amount: $119.99\n- Restocking fee: $0\n- Refund method: credit card\n\nYou\u2019ll receive a confirmation email shortly. The refund",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T25",
+      "scenario_name": "Multi-item late + extended window: electronics refund (with restocking) + personal-care opened denial + dual shipping credit",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.75,
+      "combined": 0.814,
+      "error": null,
+      "response_preview": "Your return request has been approved for the LED Desk Lamp:\n\n- Refund amount: **$39.09**\n- Restocking fee: **$6.90** (15%)\n- Total refund to your credit card: **$39.09**\n\nThe Face Serum Set is denied",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T26",
+      "scenario_name": "Partial cancellation: cancel one item from a multi-item processing order, keep the other",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.833,
+      "combined": 0.828,
+      "error": null,
+      "response_preview": "Your cancellation request for the Mechanical Keyboard (item LI-015) has been submitted successfully.\n\n**Details:**\n- Item: Mechanical Keyboard\n- Status: Cancelled before shipment\n- Refund amount: $129",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T27",
+      "scenario_name": "Multi-item refund/deny with adversarial fictional bonus: must ignore made-up discount",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.96,
+      "error": null,
+      "response_preview": "Your return for the Mechanical Keyboard has been successfully submitted.\n\n**Details:**\n- Return reason: Changed mind\n- Refund amount: **$129.99**\n- Restocking fee: **$9.75** (7.5%)\n- Net refund: **$12",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T28",
+      "scenario_name": "Late-extension makes single item eligible (standard tier electronics with restocking)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.988,
+      "financial_accuracy": 0.25,
+      "communication_quality": 0.2,
+      "combined": 0.61,
+      "error": null,
+      "response_preview": "The $10 shipping credit for late delivery has been successfully processed and submitted. You will receive a confirmation email shortly.\n\n**Summary:**\n- **Item:** LED Desk Lamp (order ID: ORD-004)\n- **",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "T29",
+      "scenario_name": "Sale item denial (second sale product, different framing)",
+      "difficulty": "medium",
+      "decision_correctness": 0.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.0,
+      "combined": 0.5,
+      "error": null,
+      "response_preview": "Thanks for understanding. If you have any other questions or need help with a different item or issue, just let me know.",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy"
+      ]
+    },
+    {
+      "scenario_id": "T30",
+      "scenario_name": "Multi-item processing: 'return both' must redirect to cancellation for ALL items",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.714,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.857,
+      "combined": 0.669,
+      "error": null,
+      "response_preview": "Your cancellation request for order ORD-012 has been submitted successfully. Both items are still processing and haven\u2019t shipped yet, so the full refund of $164.98 (item prices only, no tax or fees) i",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "submit_resolution"
+      ]
+    }
+  ]
+}

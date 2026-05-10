@@ -1,0 +1,8 @@
+.azure
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+*.bak
+*.bak.*
+agent_traces_to_sft.ipynb.bak*

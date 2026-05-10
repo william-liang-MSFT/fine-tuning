@@ -1,0 +1,235 @@
+{
+  "model": "gpt-4-1-nano-2025-04-14-ft-319fb1af6df7417d8817d106474ec7fa",
+  "n_scenarios": 10,
+  "avg_decision_correctness": 0.725,
+  "avg_tool_usage": 0.933,
+  "avg_financial_accuracy": 0.542,
+  "avg_communication_quality": 0.685,
+  "avg_combined": 0.727,
+  "by_difficulty": {
+    "easy": {
+      "count": 4,
+      "avg_combined": 0.88,
+      "avg_decision": 0.925,
+      "avg_tools": 0.964,
+      "avg_financial": 0.75,
+      "avg_communication": 0.812
+    },
+    "hard": {
+      "count": 6,
+      "avg_combined": 0.625,
+      "avg_decision": 0.592,
+      "avg_tools": 0.912,
+      "avg_financial": 0.403,
+      "avg_communication": 0.6
+    }
+  },
+  "errors": 0,
+  "per_scenario": [
+    {
+      "scenario_id": "H01",
+      "scenario_name": "Simple apparel return within window (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 1.0,
+      "error": null,
+      "response_preview": "Your refund for the Merino Wool Sweater has been successfully submitted.\n\n- Refund amount: $89.99\n- Restocking fee: $0.00\n- Refund method: Original credit card\n- Confirmation ID: RES-B67E6AA0\n\nYou sho",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H02",
+      "scenario_name": "Lost package claim (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.5,
+      "combined": 0.95,
+      "error": null,
+      "response_preview": "Your refund for the Wireless Headphones (order ID ORD-H02) has been submitted successfully.\n\n**Details:**\n- Refund amount: **$149.99**\n- Restocking fee: **$0.00**\n- Total refund: **$149.99**\n- Refund ",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H03",
+      "scenario_name": "Cancel unshipped order (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.75,
+      "combined": 0.569,
+      "error": null,
+      "response_preview": "Your cancellation request for order ORD-H03 has been successfully submitted. Both items are still processing and have not shipped yet, so the full refund of $178.18 will be processed back to your cred",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H04",
+      "scenario_name": "Defective item refund (held-out)",
+      "difficulty": "easy",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 1.0,
+      "combined": 1.0,
+      "error": null,
+      "response_preview": "Your refund request for the defective Electric Kettle (Order ID: ORD-H04) has been successfully submitted.\n\n- Refund Amount: $59.99\n- Refund Method: Original credit card\n- Restocking Fee: $0.00 (no fe",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H05",
+      "scenario_name": "Mid-conversation pivot: refund \u2192 replacement on defective (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 0.903,
+      "financial_accuracy": 0.667,
+      "communication_quality": 1.0,
+      "combined": 0.892,
+      "error": null,
+      "response_preview": "Your replacement for the defective Mechanical Keyboard has been successfully submitted.\n\n**Resolution details:**\n- Item: Mechanical Keyboard\n- Reason: Defective (spacebar doesn\u2019t register, keys stuck)",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution",
+        "check_resolution_policy",
+        "get_order_details",
+        "check_resolution_policy",
+        "check_inventory",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H06",
+      "scenario_name": "Underclaim entitlement: customer asks for less than owed (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.0,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.0,
+      "combined": 0.214,
+      "error": null,
+      "response_preview": "You\u2019re welcome! If you need help again, I\u2019m here. Have a great day!",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H07",
+      "scenario_name": "Mixed order: refund one, deny sale item (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.5,
+      "tool_usage": 1.0,
+      "financial_accuracy": 1.0,
+      "communication_quality": 0.6,
+      "combined": 0.76,
+      "error": null,
+      "response_preview": "The refund for your Mechanical Keyboard has been successfully submitted.\n\n**Details:**\n- Item: Mechanical Keyboard (LI-H07A)\n- Refund amount: **$120.24**\n- Restocking fee: **$9.75** (7.5%)\n- Refund me",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H08",
+      "scenario_name": "Late delivery extends window: denied becomes eligible (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 1.0,
+      "tool_usage": 1.0,
+      "financial_accuracy": 0.5,
+      "communication_quality": 0.8,
+      "combined": 0.855,
+      "error": null,
+      "response_preview": "Your return for the Smart Watch has been successfully submitted.\n\nHere are the details:\n- Confirmation ID: **RES-BCA991D6**\n- Refund amount: **$254.99**\n- Restocking fee: **$45.00**\n- Late delivery sh",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H09",
+      "scenario_name": "Status mismatch: 'return' on processing must become cancellation (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.7,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.25,
+      "communication_quality": 0.8,
+      "combined": 0.637,
+      "error": null,
+      "response_preview": "Your cancellation and refund request for the Bluetooth speaker (item LI-H09A) has been successfully submitted. \n\n**Details:**\n- Refund amount: **$79.99**\n- Restocking fee: **$0**\n- Status: **Confirmed",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "submit_resolution"
+      ]
+    },
+    {
+      "scenario_id": "H10",
+      "scenario_name": "Cross-order combo: refund one order + deny another (sale-final) (held-out)",
+      "difficulty": "hard",
+      "decision_correctness": 0.35,
+      "tool_usage": 0.857,
+      "financial_accuracy": 0.0,
+      "communication_quality": 0.4,
+      "combined": 0.394,
+      "error": null,
+      "response_preview": "Your refund request for the Running Jacket has been submitted successfully.\n\n- Refund amount: **$89.99**\n- Restocking fee: **$0.00**\n- Refund method: **credit card**\n- Confirmation ID: **RES-18125CC0*",
+      "actual_tools": [
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "get_order_details",
+        "get_fulfillment_status",
+        "check_resolution_policy",
+        "calculate_resolution",
+        "submit_resolution"
+      ]
+    }
+  ]
+}
