@@ -1,6 +1,6 @@
 """Build a clean, explanatory demo notebook for FT distillation.
 
-Outputs: demo1_distillation_walkthrough.ipynb
+Outputs: demo_distillation.ipynb
 
 The notebook walks through the distillation cycle end-to-end in a single linear
 narrative, then closes with a live FT-agent showcase that loads pre-generated
@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 NB_DIR = Path(__file__).resolve().parents[1]
-OUT = NB_DIR / "demo1_distillation_walkthrough.ipynb"
+OUT = NB_DIR / "demo_distillation.ipynb"
 
 
 def md(text: str) -> dict:
@@ -481,7 +481,8 @@ tool calls. The helper renders the scenario context once, then the two
 conversations stacked (student first, then FT) for easy visual comparison.
 """))
 
-CELLS.append(code("""from IPython.display import Markdown, display
+CELLS.append(code("""from IPython.display import HTML, display
+import markdown as _md
 
 
 def _fmt_args(args) -> str:
@@ -494,19 +495,19 @@ def _render_one_side(label: str, model_name: str, side: dict) -> list[str]:
     lines: list[str] = []
     n_tools = len(side.get("tool_calls") or [])
     tool_names = [tc.get("name") for tc in (side.get("tool_calls") or [])]
-    lines.append(f"#### {label} — `{model_name}`")
-    lines.append(f"_Rounds: {side.get('rounds')}  •  Tool calls: {n_tools}  "
-                 f"•  Stop: `{side.get('stop_reason')}`_")
+    lines.append(f"#### {label} &mdash; `{model_name}`")
+    lines.append(f"_Rounds: {side.get('rounds')}  &bull;  Tool calls: {n_tools}  "
+                 f"&bull;  Stop: `{side.get('stop_reason')}`_")
     lines.append("")
     if tool_names:
-        lines.append(f"**Tool sequence:** {' → '.join(f'`{t}`' for t in tool_names)}")
+        lines.append(f"**Tool sequence:** {' &rarr; '.join(f'`{t}`' for t in tool_names)}")
         lines.append("")
     lines.append("<details><summary><b>Full transcript</b></summary>")
     lines.append("")
     for turn in side.get("transcript", []):
-        speaker = "👤 **Customer**" if turn["role"] == "customer" else "🤖 **Agent**"
+        speaker = "**Customer:**" if turn["role"] == "customer" else "**Agent:**"
         content = (turn.get("content") or "").strip()
-        lines.append(f"{speaker}:")
+        lines.append(speaker)
         lines.append("")
         for line in (content.splitlines() or [""]):
             lines.append(f"> {line}")
@@ -518,7 +519,7 @@ def _render_one_side(label: str, model_name: str, side: dict) -> list[str]:
 
 def render_demo(demo: dict, diagnosis_md: str = "") -> None:
     md_lines: list[str] = []
-    md_lines.append(f"### {demo['set']}/{demo['scenario_id']} — {demo['headline']}")
+    md_lines.append(f"### {demo['set']}/{demo['scenario_id']} &mdash; {demo['headline']}")
     md_lines.append(f"**Category:** `{demo['category']}`")
     md_lines.append("")
     md_lines.append(f"**Customer opens with:**")
@@ -541,7 +542,9 @@ def render_demo(demo: dict, diagnosis_md: str = "") -> None:
         md_lines.append("#### Why the student failed and the FT model succeeded")
         md_lines.append("")
         md_lines.append(diagnosis_md)
-    display(Markdown("\\n".join(md_lines)))
+    md_text = "\\n".join(md_lines)
+    html_body = _md.markdown(md_text, extensions=["fenced_code", "tables"])
+    display(HTML(html_body))
 """))
 
 # =====================================================================
