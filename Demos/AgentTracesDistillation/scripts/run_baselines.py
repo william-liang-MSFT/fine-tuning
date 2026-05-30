@@ -27,15 +27,17 @@ EVAL_DIR = NB_DIR / "eval"
 RESULTS_DIR = NB_DIR / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
-ZAVA_LAB = (NB_DIR / "../../../datasets/agents/Zava-Ignite-RL-Lab").resolve()
-ZAVA_SRC = ZAVA_LAB / "src"
-if not (ZAVA_SRC / "zava_tools.py").exists():
-    raise RuntimeError(f"Zava lab not found at {ZAVA_LAB}")
+# The retail-agent-langgraph tools.py is the canonical tool source. It exposes
+# - TOOL_FUNCTIONS: raw Python callables (used by this script's chat-completions tool loop)
+# - AgentTools.all_tools(): LangChain @tool wrappers (used to derive OpenAI schemas)
+# (Historically these came from a sibling Zava-Ignite-RL-Lab/src/zava_tools.py
+# which was removed when the agent was moved into src/retail-agent-langgraph/.)
+RETAIL_AGENT_SRC = (NB_DIR / "src" / "retail-agent-langgraph").resolve()
+if not (RETAIL_AGENT_SRC / "tools.py").exists():
+    raise RuntimeError(f"retail-agent tools not found at {RETAIL_AGENT_SRC}")
 
-# Path setup: ZAVA_SRC for zava_tools, EVAL_DIR LAST so it wins on `import evaluate`
-# (Zava lab also ships an evaluate.py with a different signature — make sure ours
-# takes precedence by inserting it at the front AFTER zava_tools.)
-for p in (str(ZAVA_SRC), str(EVAL_DIR)):
+# Path setup: RETAIL_AGENT_SRC for tools, EVAL_DIR LAST so it wins on `import evaluate`
+for p in (str(RETAIL_AGENT_SRC), str(EVAL_DIR)):
     if p in sys.path:
         sys.path.remove(p)
     sys.path.insert(0, p)
@@ -43,26 +45,45 @@ for p in (str(ZAVA_SRC), str(EVAL_DIR)):
 load_dotenv(NB_DIR / ".env")
 
 import evaluate as eval_module  # noqa: E402
-import zava_tools  # noqa: E402  # imports cleanly: no agentserver deps
+import evaluate_v2 as eval_module_v2  # noqa: E402
+import tools as retail_tools  # noqa: E402  # imports cleanly: no agentserver deps
 
 eval_module = importlib.reload(eval_module)
+eval_module_v2 = importlib.reload(eval_module_v2)
 
-TOOL_SCHEMAS = zava_tools.TOOL_SCHEMAS
-TOOL_FUNCTIONS = zava_tools.TOOL_FUNCTIONS
+# Derive OpenAI function-call schemas from the LangChain @tool wrappers so this
+# script stays in sync with whatever the hosted agent binds.
+from langchain_core.utils.function_calling import convert_to_openai_tool  # noqa: E402
+
+TOOL_FUNCTIONS = retail_tools.TOOL_FUNCTIONS
+TOOL_SCHEMAS = [convert_to_openai_tool(t) for t in retail_tools.AgentTools.all_tools()]
 
 # Mirrors the SYSTEM_PROMPT in zava_agent.py (agent_policy.md). Kept inline so
 # this script doesn't need to import the full hosted-agent module.
 SYSTEM_PROMPT = (
-    "You are Zava's Post-Purchase Resolution Desk agent. You help customers with "
-    "returns, exchanges, replacements, cancellations, and shipping disputes.\n\n"
+    "You are Zava's Post-Purchase Resolution Desk agent. Help customers with "
+    "returns, exchanges, replacements, cancellations, and shipping disputes. "
+    "Use the available tools to verify eligibility and compute resolutions.\n\n"
     + (NB_DIR / "src" / "retail-agent-langgraph" / "agent_policy.md").read_text(encoding="utf-8")
 )
 
 
 def _get_client(model=None):
-    api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-    base_url = os.environ.get("OPENAI_BASE_URL")
-    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    # AGENT_* env vars allow pointing the AGENT model at a separate endpoint
+    # (e.g. a fine-tuned deployment on a different Azure resource) without
+    # disturbing the customer-simulator client which uses OPENAI_BASE_URL.
+    api_key = (
+        os.environ.get("AGENT_OPENAI_API_KEY")
+        or os.environ.get("AZURE_OPENAI_API_KEY")
+    )
+    base_url = (
+        os.environ.get("AGENT_OPENAI_BASE_URL")
+        or os.environ.get("OPENAI_BASE_URL")
+    )
+    endpoint = (
+        os.environ.get("AGENT_AZURE_OPENAI_ENDPOINT")
+        or os.environ.get("AZURE_OPENAI_ENDPOINT")
+    )
     api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2025-03-01-preview")
 
     from openai import AzureOpenAI, OpenAI  # noqa: WPS433
@@ -95,7 +116,12 @@ def _run_agent(user_message, *, model, client, max_turns=15, history=None, verbo
         m = (model or "").lower()
         if any(t in m for t in ("o4", "o5", "gpt-5", "rft")):
             kwargs["max_completion_tokens"] = 8192
-            kwargs["reasoning_effort"] = "high"
+            # gpt-5.5-1 rejects reasoning_effort when function tools are present
+            # on /v1/chat/completions ("use /v1/responses instead"). We always
+            # pass tools in this harness, so omit reasoning_effort entirely for
+            # gpt-5.5 family. Older o4/o5 models accept the default effort.
+            if "gpt-5.5" not in m:
+                kwargs["reasoning_effort"] = "high"
         else:
             kwargs["max_tokens"] = 4096
             # Lower temperature for the agent itself to reduce run-to-run
@@ -275,8 +301,14 @@ def run_multi_turn_eval_conversation(scenario_user_message, model, *, client=Non
         if verbose:
             print(f"  agent: {agent_text[:140]}", flush=True)
 
-        history.append({"role": "user", "content": cust_msg_clean})
-        history.append({"role": "assistant", "content": agent_text})
+        # Preserve the FULL agent sub-conversation (assistant tool_calls + tool
+        # responses + final text) across customer rounds, not just the final
+        # assistant text. Otherwise the agent loses memory of tools it already
+        # called and re-asks the customer for info it could remember. The
+        # returned result["messages"] = [system, ...prev_history, new_user,
+        # asst1, tool1..., final_asst], so slicing off the system gives us a
+        # complete updated history.
+        history = result["messages"][1:]
 
         if ended:
             stop_reason = "end_token"
@@ -361,7 +393,11 @@ def main():
     ap.add_argument("--only", default="", help="Comma-separated scenario IDs (e.g. T21,T25,T30)")
     ap.add_argument("--merge", action="store_true", help="Merge --only run into existing baseline cache")
     ap.add_argument("--suffix", default="", help="Suffix appended to output filename (e.g. .pass1)")
-    ap.add_argument("--scenarios", default=str(EVAL_DIR / "scenarios_train.json"))
+    ap.add_argument("--scenarios", default=str(EVAL_DIR / "scenarios_hard.json"))
+    ap.add_argument("--scorer", default="v1", choices=["v1", "v2"],
+                    help="Which scorer to use (v2 = hard-set calibrated)")
+    ap.add_argument("--results-dir", default="",
+                    help="Subdir under results/ to write into (created if missing)")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
@@ -385,15 +421,19 @@ def main():
         if not scenarios:
             sys.exit("No scenarios matched --only filter.")
 
-    out_path = RESULTS_DIR / f"baseline__mt__{label}__{_safe_name(model)}{args.suffix}.json"
+    target_dir = RESULTS_DIR / args.results_dir if args.results_dir else RESULTS_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+    scorer_tag = "" if args.scorer == "v1" else ".v2"
+    out_path = target_dir / f"baseline__mt__{label}__{_safe_name(model)}{scorer_tag}{args.suffix}.json"
     print(
         f"Running {label.upper()} baseline | model={model} | "
         f"customer={CUSTOMER_MODEL} | n={len(scenarios)} | rounds<={EVAL_MAX_ROUNDS} | "
-        f"agent_max_turns={AGENT_MAX_TURNS}\nOutput -> {out_path}",
+        f"agent_max_turns={AGENT_MAX_TURNS} | scorer={args.scorer}\nOutput -> {out_path}",
         flush=True,
     )
 
-    summary = eval_module.evaluate_model(
+    scorer = eval_module_v2 if args.scorer == "v2" else eval_module
+    summary = scorer.evaluate_model(
         model,
         scenarios,
         runner=make_multi_turn_runner(model),
@@ -406,7 +446,7 @@ def main():
         print(f"Merged subset run into existing cache ({len(summary['per_scenario'])} total).", flush=True)
 
     out_path.write_text(json.dumps(summary, indent=2, default=str))
-    eval_module.print_eval_summary(summary)
+    scorer.print_eval_summary(summary)
     print(f"\nWrote {out_path}")
 
 
