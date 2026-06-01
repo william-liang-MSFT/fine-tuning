@@ -334,14 +334,21 @@ for ax, (set_name, set_title) in zip(axes, SETS):
     # FT uplift annotation: arrow from student to ft at pass^3
     s3 = scores["student"]["pass^3"]
     f3 = scores["ft"]["pass^3"]
+    t3 = scores["teacher"]["pass^3"]
+    gap3 = t3 - s3
     if f3 > s3:
         x_anchor = x[-1] + w * 0.4
         ax.annotate("", xy=(x_anchor, f3), xytext=(x_anchor, s3),
                     arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.8),
                     zorder=5)
+        if gap3 > 0:
+            headroom_pct = (f3 - s3) / gap3 * 100
+            label = f"{headroom_pct:.1f}%\\nheadroom\\nrecovered"
+        else:
+            label = f"+{(f3-s3)*100:.0f}pp"
         ax.text(x_anchor + 0.04, (s3 + f3)/2,
-                f"+{(f3-s3)*100:.0f}pp", color="#d62728",
-                fontsize=10, fontweight="bold", va="center", zorder=5)
+                label, color="#d62728",
+                fontsize=9, fontweight="bold", va="center", zorder=5)
 
     ax.set_xticks(x)
     ax.set_xticklabels(METRICS)
@@ -355,10 +362,13 @@ for ax, (set_name, set_title) in zip(axes, SETS):
         ax.spines[spine].set_visible(False)
 
 axes[0].set_ylabel(f"pass^k @ tau={TAU}", fontsize=11)
-axes[0].legend(loc="upper left", frameon=False, fontsize=10)
+# Legend goes to the right of the figure so it doesn't overlap the bars
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="center left",
+           bbox_to_anchor=(1.0, 0.5), frameon=False, fontsize=10)
 fig.suptitle("Fine-tuning lifts the student toward the teacher ceiling",
              fontsize=14, fontweight="bold", y=1.02)
-fig.tight_layout()
+fig.tight_layout(rect=(0, 0, 0.84, 1))
 plt.show()
 """))
 
