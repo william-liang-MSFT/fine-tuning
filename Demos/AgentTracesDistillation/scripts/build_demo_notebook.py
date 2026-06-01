@@ -292,6 +292,77 @@ lift_table("validation")
 """))
 
 # =====================================================================
+# 6b. Visual: grouped bar chart of pass^k for student / FT / teacher
+# =====================================================================
+CELLS.append(md("""### Visualizing the lift
+
+The same numbers as a grouped bar chart, so the **student &rarr; FT** uplift is
+visually obvious against the teacher ceiling.
+"""))
+
+CELLS.append(code("""import matplotlib.pyplot as plt
+import numpy as np
+
+ROLES   = ("student", "ft", "teacher")
+LABELS  = {"student": "Student (baseline)",
+           "ft":      "FT student (after distillation)",
+           "teacher": "Teacher (reference ceiling)"}
+COLORS  = {"student": "#c0c4cc",  # neutral grey
+           "ft":      "#1f77b4",  # blue, the hero
+           "teacher": "#2ca02c"}  # green ceiling
+METRICS = ("pass^1", "pass^2", "pass^3")
+SETS    = (("train", "Train (80 scenarios)"),
+           ("validation", "Validation / held-out (20 scenarios)"))
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+x = np.arange(len(METRICS))
+w = 0.26
+
+for ax, (set_name, set_title) in zip(axes, SETS):
+    scores = {role: pass_k_at(set_name, role) for role in ROLES}
+    for i, role in enumerate(ROLES):
+        vals = [scores[role][m] for m in METRICS]
+        bars = ax.bar(x + (i - 1) * w, vals, w,
+                      label=LABELS[role], color=COLORS[role],
+                      edgecolor="white", linewidth=0.6,
+                      zorder=3)
+        for b, v in zip(bars, vals):
+            ax.text(b.get_x() + b.get_width()/2, v + 0.012,
+                    f"{v:.2f}", ha="center", va="bottom",
+                    fontsize=9, color="#333", zorder=4)
+
+    # FT uplift annotation: arrow from student to ft at pass^3
+    s3 = scores["student"]["pass^3"]
+    f3 = scores["ft"]["pass^3"]
+    if f3 > s3:
+        x_anchor = x[-1] + w * 0.4
+        ax.annotate("", xy=(x_anchor, f3), xytext=(x_anchor, s3),
+                    arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.8),
+                    zorder=5)
+        ax.text(x_anchor + 0.04, (s3 + f3)/2,
+                f"+{(f3-s3)*100:.0f}pp", color="#d62728",
+                fontsize=10, fontweight="bold", va="center", zorder=5)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(METRICS)
+    ax.set_title(set_title, fontsize=12, pad=10)
+    ax.set_ylim(0, 1.08)
+    ax.set_yticks(np.linspace(0, 1.0, 6))
+    ax.set_yticklabels([f"{v:.0%}" for v in np.linspace(0, 1.0, 6)])
+    ax.grid(axis="y", linestyle="--", alpha=0.35, zorder=0)
+    ax.set_axisbelow(True)
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+
+axes[0].set_ylabel(f"pass^k @ tau={TAU}", fontsize=11)
+axes[0].legend(loc="upper left", frameon=False, fontsize=10)
+fig.suptitle("Fine-tuning lifts the student toward the teacher ceiling",
+             fontsize=14, fontweight="bold", y=1.02)
+fig.tight_layout()
+plt.show()
+"""))
+
+# =====================================================================
 # 7. The distillation pipeline — narrated with concrete artifacts
 # =====================================================================
 CELLS.append(md("""## 7. How the SFT training data was generated
