@@ -75,11 +75,47 @@ model is reliably crossing the bar or whether it's noisy.
 # =====================================================================
 CELLS.append(md("""## 1. Setup
 
-Paths, environment, and one helper. Nothing here calls a model.
+Paths, env, projector-friendly styling, and a couple of print helpers reused
+by every cell below. Nothing here calls a model.
 """))
 
-CELLS.append(code("""import json
+CELLS.append(code("""# === Presentation styling: bump font sizes so this renders well on a projector. ===
+from IPython.display import HTML, display
+
+display(HTML('''
+<style>
+/* Rendered markdown */
+.jp-RenderedHTMLCommon, .markdown-body, .text_cell_render {
+    font-size: 19px !important;
+    line-height: 1.6 !important;
+}
+.jp-RenderedHTMLCommon h1, .markdown-body h1 { font-size: 2.6em !important; }
+.jp-RenderedHTMLCommon h2, .markdown-body h2 {
+    font-size: 2.0em !important; margin-top: 1.3em !important;
+    padding-top: .25em !important; border-top: 3px solid #d1d5da !important;
+}
+.jp-RenderedHTMLCommon h3, .markdown-body h3 {
+    font-size: 1.55em !important; margin-top: 1.0em !important;
+}
+.jp-RenderedHTMLCommon h4, .markdown-body h4 { font-size: 1.25em !important; }
+.jp-RenderedHTMLCommon table, .markdown-body table { font-size: 17px !important; }
+.jp-RenderedHTMLCommon code, .markdown-body code { font-size: 16px !important; }
+.jp-RenderedHTMLCommon blockquote, .markdown-body blockquote {
+    font-size: 17px !important; line-height: 1.55 !important;
+}
+/* Cell output (print statements) */
+.jp-RenderedText, .jp-OutputArea-output pre {
+    font-size: 17px !important; line-height: 1.45 !important;
+}
+/* Code editor */
+.cm-editor, .CodeMirror, .jp-CodeMirrorEditor { font-size: 16px !important; }
+</style>
+'''))
+
+# === Imports + paths + env ===
+import json
 import os
+import textwrap
 from collections import defaultdict
 from pathlib import Path
 
@@ -95,10 +131,36 @@ STUDENT_MODEL  = os.environ.get("STUDENT_MODEL", "gpt-4.1-nano")
 TEACHER_MODEL  = os.environ.get("TEACHER_MODEL", "gpt-5.5")
 FT_MODEL       = os.environ.get("FT_MODEL",      "gpt-4.1-nano-demo1")
 
-print(f"student model: {STUDENT_MODEL}")
-print(f"teacher model: {TEACHER_MODEL}")
-print(f"fine-tuned:    {FT_MODEL}")
-print(f"results live in {RESULTS_DIR.relative_to(NB_DIR)}")
+# === Print helpers used by every cell below ===
+BANNER_W = 72
+
+def banner(title: str, sub: str = "") -> None:
+    print("═" * BANNER_W)
+    print(f"   {title}")
+    if sub:
+        print(f"   {sub}")
+    print("═" * BANNER_W)
+
+def section(title: str) -> None:
+    print()
+    print(f"   ── {title} ──")
+
+def wrap_field(label: str, value: str, *, width: int = 56) -> None:
+    prefix = f"   {label:<11}:  "
+    pad = " " * len(prefix)
+    lines = textwrap.wrap(value or "", width=width) or [""]
+    print(prefix + lines[0])
+    for line in lines[1:]:
+        print(pad + line)
+
+# === Show what we loaded ===
+banner("MODELS  &  PATHS")
+print(f"   Student     →  {STUDENT_MODEL}")
+print(f"   Teacher     →  {TEACHER_MODEL}  (running inside hosted retail agent)")
+print(f"   Fine-tuned  →  {FT_MODEL}")
+print()
+print(f"   Results dir :  {RESULTS_DIR.relative_to(NB_DIR)}")
+print(f"   Eval tasks  :  {EVAL_DIR.relative_to(NB_DIR)}")
 """))
 
 # =====================================================================
@@ -119,15 +181,16 @@ categories are causing the most pain.
 CELLS.append(code("""train_scenarios = json.loads((EVAL_DIR / "training_tasks.json").read_text(encoding="utf-8"))
 val_scenarios   = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="utf-8"))
 
-print(f"training tasks:   {len(train_scenarios)}")
-print(f"validation tasks: {len(val_scenarios)}")
-print()
-print("Example scenario:")
+banner("EVALUATION SCENARIOS")
+print(f"   Training tasks    →  {len(train_scenarios)}")
+print(f"   Validation tasks  →  {len(val_scenarios)}   (held out from training)")
+
+section("Example training scenario (#1)")
 ex = train_scenarios[0]
-print(f"  id:         {ex['id']}")
-print(f"  category:   {ex['category']}")
-print(f"  user_msg:   {ex['user_message'][:120]}...")
-print(f"  expected:   {ex['expected_resolution_summary']}")
+wrap_field("id",        str(ex['id']))
+wrap_field("category",  ex['category'])
+wrap_field("customer",  '"' + ex['user_message'] + '"')
+wrap_field("expected",  ex['expected_resolution_summary'])
 """))
 
 # =====================================================================
@@ -163,31 +226,35 @@ demo = demo_blob["demos"][0]                # validation sid=HE027, restocking_f
 scenarios = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="utf-8"))
 scenario = next(s for s in scenarios if s["name"] == demo["name"])
 
-# evaluate_v2.score_scenario expects a result dict with:
-#   response: final assistant text
-#   messages: list of {role, content} turns ("agent" or "assistant" both accepted)
-#   tool_calls: list of {name, arguments, result}
 ft = demo["ft"]
 result = {
     "response":   ft["final_response"],
     "messages":   ft["transcript"],
     "tool_calls": ft["tool_calls"],
 }
-
 scores = score_scenario(result, scenario)
 
-print(f"scenario:  {scenario['name']}  ({scenario['category']})")
-print(f"customer:  {scenario['user_message'][:90]}...")
-print(f"model:     {demo_blob['ft_model']}")
-print(f"tools run: {[tc['name'] for tc in ft['tool_calls']]}")
-print()
-print(f"  decision_correctness  : {scores['decision_correctness']:.3f}  (weight 0.35)")
-print(f"  tool_usage            : {scores['tool_usage']:.3f}  (weight 0.25)")
-print(f"  financial_accuracy    : {scores['financial_accuracy']:.3f}  (weight 0.20)")
-print(f"  communication_quality : {scores['communication_quality']:.3f}  (weight 0.20)")
-print(f"  ------------------------------")
-print(f"  combined              : {scores['combined']:.3f}    "
-      f"{'PASS' if scores['combined'] >= 0.70 else 'FAIL'} @ tau=0.70")
+banner("LIVE SCORING — HE027 / restocking_fee_math",
+       f"FT model: {demo_blob['ft_model']}")
+wrap_field("scenario",  scenario['name'])
+wrap_field("customer",  '"' + scenario['user_message'] + '"')
+
+section("Tool sequence")
+for i, tc in enumerate(ft['tool_calls'], 1):
+    print(f"     {i}. {tc['name']}")
+
+section("Dimension scores")
+DIMS = [
+    ("Decision correctness",  scores['decision_correctness'],  0.35),
+    ("Tool usage",            scores['tool_usage'],            0.25),
+    ("Financial accuracy",    scores['financial_accuracy'],    0.20),
+    ("Communication quality", scores['communication_quality'], 0.20),
+]
+for name, val, wt in DIMS:
+    print(f"     {name:<24}  {val:.3f}   (weight {int(wt*100)}%)")
+print(f"     {'─' * 58}")
+verdict = "✅  PASS" if scores['combined'] >= 0.70 else "❌  FAIL"
+print(f"     {'COMBINED':<24}  {scores['combined']:.3f}   {verdict}   (bar = 0.70)")
 """))
 
 # =====================================================================
@@ -217,11 +284,14 @@ def load_runs(set_name: str, role: str) -> list[dict]:
     return runs
 
 
-# Smoke-test: how many rows in each cell?
+banner("CACHED EVAL RUNS",
+       "3 roles × 3 passes × 2 sets  =  18 cells on disk, all scored")
+print(f"   {'set':<12} {'role':<10} {'pass^1':>10} {'pass^2':>10} {'pass^3':>10}")
+print(f"   {'─' * 56}")
 for set_name in ("train", "validation"):
     for role in ("student", "teacher", "ft"):
         ns = [len(r["per_scenario"]) for r in load_runs(set_name, role)]
-        print(f"  {set_name:<10} {role:<8} pass1/2/3 sizes: {ns}")
+        print(f"   {set_name:<12} {role:<10} {ns[0]:>10} {ns[1]:>10} {ns[2]:>10}")
 """))
 
 # =====================================================================
@@ -248,13 +318,28 @@ def pass_k_at(set_name: str, role: str, tau: float = TAU) -> dict:
     return {"n": n, "pass^1": p1, "pass^2": p2, "pass^3": p3}
 
 
-print(f"{'set':<11} {'role':<8} {'n':>3}  {'p^1':>5}  {'p^2':>5}  {'p^3':>5}")
-print("-" * 44)
-for set_name in ("train", "validation"):
+_ROLE_LABEL = {
+    "student": f"student   ({STUDENT_MODEL})",
+    "teacher": f"teacher   ({TEACHER_MODEL})",
+    "ft":      f"ft        ({FT_MODEL})",
+}
+
+banner(f"PASS^k  @  τ = {TAU}",
+       "fraction of scenarios meeting the bar on all k of k tries")
+
+for set_name, set_title in (
+    ("train",      "TRAIN  (80 scenarios)"),
+    ("validation", "VALIDATION  (20 scenarios — held out)"),
+):
+    print()
+    print(f"   {set_title}")
+    print(f"   {'─' * 68}")
+    print(f"   {'role':<38} {'pass^1':>9} {'pass^2':>9} {'pass^3':>9}")
+    print(f"   {'─' * 68}")
     for role in ("student", "teacher", "ft"):
         s = pass_k_at(set_name, role)
-        print(f"{set_name:<11} {role:<8} {s['n']:>3}  "
-              f"{s['pass^1']:>5.2f}  {s['pass^2']:>5.2f}  {s['pass^3']:>5.2f}")
+        print(f"   {_ROLE_LABEL[role]:<38} "
+              f"{s['pass^1']*100:>8.0f}% {s['pass^2']*100:>8.0f}% {s['pass^3']*100:>8.0f}%")
 """))
 
 # =====================================================================
@@ -274,21 +359,30 @@ Two metrics per pass^k row:
   teacher (`n/a`).
 """))
 
-CELLS.append(code("""def lift_table(set_name: str) -> None:
+CELLS.append(code("""def lift_table(set_name: str, title: str) -> None:
     s = pass_k_at(set_name, "student")
     f = pass_k_at(set_name, "ft")
     t = pass_k_at(set_name, "teacher")
-    print(f"\\n=== {set_name.upper()} ({s['n']} scenarios) ===")
-    print(f"{'metric':<8} {'student':>8} {'ft':>8} {'teacher':>8}   {'ft lift':>9}   {'headroom':>10}")
+    banner(f"FT LIFT — {title}",
+           f"{s['n']} scenarios   ·   student → FT (same base model, same cost)")
+    print(f"   {'metric':<8} {'student':>8} {'→':>3} {'ft':>8} {'teacher':>9}"
+          f"   {'lift':>8}   {'headroom recovered':>20}")
+    print(f"   {'─' * 78}")
     for key in ("pass^1", "pass^2", "pass^3"):
         ds_pp = (f[key] - s[key]) * 100
         gap = t[key] - s[key]
-        headroom = f"{(f[key] - s[key]) / gap:>+10.3f}" if gap > 0 else f"{'n/a':>10}"
-        print(f"{key:<8} {s[key]:>8.2f} {f[key]:>8.2f} {t[key]:>8.2f}   {ds_pp:>+7.1f}pp   {headroom}")
+        if gap > 0:
+            head = f"{(f[key] - s[key]) / gap * 100:>+18.0f}%"
+        else:
+            head = f"{'n/a':>19}"
+        print(f"   {key:<8} {s[key]*100:>7.0f}% "
+              f"{'→':>3} {f[key]*100:>7.0f}% {t[key]*100:>8.0f}%"
+              f"   {ds_pp:>+6.1f}pp   {head}")
 
 
-lift_table("train")
-lift_table("validation")
+lift_table("train",      "Train")
+print()
+lift_table("validation", "Validation / held out")
 """))
 
 # =====================================================================
@@ -314,7 +408,7 @@ METRICS = ("pass^1", "pass^2", "pass^3")
 SETS    = (("train", "Train (80 scenarios)"),
            ("validation", "Validation / held-out (20 scenarios)"))
 
-fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
 x = np.arange(len(METRICS))
 w = 0.26
 
@@ -324,12 +418,12 @@ for ax, (set_name, set_title) in zip(axes, SETS):
         vals = [scores[role][m] for m in METRICS]
         bars = ax.bar(x + (i - 1) * w, vals, w,
                       label=LABELS[role], color=COLORS[role],
-                      edgecolor="white", linewidth=0.6,
+                      edgecolor="white", linewidth=0.8,
                       zorder=3)
         for b, v in zip(bars, vals):
-            ax.text(b.get_x() + b.get_width()/2, v + 0.012,
+            ax.text(b.get_x() + b.get_width()/2, v + 0.015,
                     f"{v:.2f}", ha="center", va="bottom",
-                    fontsize=9, color="#333", zorder=4)
+                    fontsize=12, fontweight="bold", color="#222", zorder=4)
 
     # FT uplift annotation: arrow from student to ft at pass^3
     s3 = scores["student"]["pass^3"]
@@ -337,37 +431,37 @@ for ax, (set_name, set_title) in zip(axes, SETS):
     t3 = scores["teacher"]["pass^3"]
     gap3 = t3 - s3
     if f3 > s3:
-        x_anchor = x[-1] + w * 0.4
+        x_anchor = x[-1] + w * 0.45
         ax.annotate("", xy=(x_anchor, f3), xytext=(x_anchor, s3),
-                    arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.8),
+                    arrowprops=dict(arrowstyle="->", color="#d62728", lw=2.2),
                     zorder=5)
         if gap3 > 0:
             headroom_pct = (f3 - s3) / gap3 * 100
-            label = f"{headroom_pct:.1f}%\\nheadroom\\nrecovered"
+            label = f"{headroom_pct:.0f}%\\nheadroom\\nrecovered"
         else:
             label = f"+{(f3-s3)*100:.0f}pp"
-        ax.text(x_anchor + 0.04, (s3 + f3)/2,
+        ax.text(x_anchor + 0.05, (s3 + f3)/2,
                 label, color="#d62728",
-                fontsize=9, fontweight="bold", va="center", zorder=5)
+                fontsize=12, fontweight="bold", va="center", zorder=5)
 
     ax.set_xticks(x)
-    ax.set_xticklabels(METRICS)
-    ax.set_title(set_title, fontsize=12, pad=10)
-    ax.set_ylim(0, 1.08)
+    ax.set_xticklabels(METRICS, fontsize=13)
+    ax.set_title(set_title, fontsize=15, pad=12)
+    ax.set_ylim(0, 1.1)
     ax.set_yticks(np.linspace(0, 1.0, 6))
-    ax.set_yticklabels([f"{v:.0%}" for v in np.linspace(0, 1.0, 6)])
+    ax.set_yticklabels([f"{v:.0%}" for v in np.linspace(0, 1.0, 6)], fontsize=12)
     ax.grid(axis="y", linestyle="--", alpha=0.35, zorder=0)
     ax.set_axisbelow(True)
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
 
-axes[0].set_ylabel(f"pass^k @ tau={TAU}", fontsize=11)
+axes[0].set_ylabel(f"pass^k @ τ = {TAU}", fontsize=14)
 # Legend goes to the right of the figure so it doesn't overlap the bars
 handles, labels = axes[0].get_legend_handles_labels()
 fig.legend(handles, labels, loc="center left",
-           bbox_to_anchor=(1.0, 0.5), frameon=False, fontsize=10)
+           bbox_to_anchor=(1.0, 0.5), frameon=False, fontsize=13)
 fig.suptitle("Fine-tuning lifts the student toward the teacher ceiling",
-             fontsize=14, fontweight="bold", y=1.02)
+             fontsize=18, fontweight="bold", y=1.03)
 fig.tight_layout(rect=(0, 0, 0.84, 1))
 plt.show()
 """))
@@ -376,6 +470,12 @@ plt.show()
 # 7. The distillation pipeline — narrated with concrete artifacts
 # =====================================================================
 CELLS.append(md("""## 7. How the SFT training data was generated
+
+> **TL;DR.** Teacher traces from the deployed agent → Foundry `DataGenerationJob`
+> reshapes them into chat-completion JSONL → light dedup/cleanup → upload as a
+> fine-tuning job against `gpt-4.1-nano` → new deployment (`gpt-4.1-nano-demo1`).
+> No human labeling. No synthetic prompts. The cells below show the exact API
+> calls (as reference — not re-executed here) and one real cached trace.
 
 The fine-tuning data is just **the teacher's own conversation traces**, captured
 from the deployed production agent and turned into chat-completion training
@@ -509,21 +609,27 @@ CELLS.append(code("""# Peek at a single teacher conversation from the cached eva
 teacher_pass1 = load_runs("train", "teacher")[0]
 sample = next(ps for ps in teacher_pass1["per_scenario"] if ps.get("transcript"))
 
-print(f"scenario_id={sample['scenario_id']}  category={sample['category']}")
-print(f"combined_score={sample['combined']:.3f}")
-print(f"rounds={sample['rounds']}  tool_calls={len(sample.get('tool_calls') or [])}")
-print()
-print("--- conversation turns ---")
-for i, turn in enumerate(sample["transcript"][:6]):
+banner("ONE TEACHER TRACE  =  ONE SFT TRAINING EXAMPLE")
+wrap_field("scenario_id",   str(sample['scenario_id']))
+wrap_field("category",      sample['category'])
+wrap_field("combined",      f"{sample['combined']:.3f}")
+wrap_field("rounds",        str(sample['rounds']))
+wrap_field("tool calls",    str(len(sample.get('tool_calls') or [])))
+
+section("Conversation turns (first 6)")
+for turn in sample["transcript"][:6]:
+    speaker = "👤 customer" if turn['role'] == 'customer' else "🤖 agent   "
     content = (turn.get("content") or "").strip().replace("\\n", " ")
-    print(f"  [{turn['role']:<8}] {content[:140]}")
-print()
-print("--- tool calls (in order) ---")
-for tc in (sample.get("tool_calls") or [])[:6]:
-    args = tc.get("arguments", {})
-    result = (tc.get("result") or "")[:100].replace("\\n", " ")
-    print(f"  {tc['name']}({json.dumps(args)})")
-    print(f"    -> {result}...")
+    if len(content) > 120:
+        content = content[:120] + "…"
+    print(f"     {speaker}  │  {content}")
+
+section("Tool calls in order (first 6)")
+for i, tc in enumerate((sample.get('tool_calls') or [])[:6], 1):
+    args = tc.get('arguments', {})
+    result = (tc.get('result') or '')[:90].replace('\\n', ' ')
+    print(f"     {i}. {tc['name']}({json.dumps(args)})")
+    print(f"        ↳ {result}…")
 """))
 
 # =====================================================================
@@ -546,10 +652,12 @@ endpoint at render time.
 
 CELLS.append(code("""DEMOS_PATH = RESULTS_DIR / "demo_transcripts.json"
 demos = json.loads(DEMOS_PATH.read_text(encoding="utf-8"))
-print(f"Loaded {len(demos['demos'])} demo conversations")
-print(f"Student model: {demos['student_model']}")
-print(f"FT model:      {demos['ft_model']}")
-print(f"Generated:     {demos['generated_at']}")
+
+banner("LIVE SHOWCASE — student vs FT, side by side")
+print(f"   Demo conversations  :  {len(demos['demos'])}")
+print(f"   Student model       :  {demos['student_model']}")
+print(f"   FT model            :  {demos['ft_model']}")
+print(f"   Generated           :  {demos['generated_at']}")
 """))
 
 # =====================================================================
