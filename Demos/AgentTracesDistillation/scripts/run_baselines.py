@@ -393,7 +393,7 @@ def main():
     ap.add_argument("--only", default="", help="Comma-separated scenario IDs (e.g. T21,T25,T30)")
     ap.add_argument("--merge", action="store_true", help="Merge --only run into existing baseline cache")
     ap.add_argument("--suffix", default="", help="Suffix appended to output filename (e.g. .pass1)")
-    ap.add_argument("--scenarios", default=str(EVAL_DIR / "scenarios_hard.json"))
+    ap.add_argument("--scenarios", default=str(EVAL_DIR / "training_tasks.json"))
     ap.add_argument("--scorer", default="v1", choices=["v1", "v2"],
                     help="Which scorer to use (v2 = hard-set calibrated)")
     ap.add_argument("--results-dir", default="",

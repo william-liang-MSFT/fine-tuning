@@ -101,9 +101,9 @@ OUT_PATH = NB_DIR / "results" / "eval_result" / "demo_transcripts.json"
 
 def load_scenarios(set_name: str) -> dict:
     if set_name == "train":
-        path = NB_DIR / "eval" / "tasks.json"
+        path = NB_DIR / "eval" / "training_tasks.json"
     else:
-        path = NB_DIR / "eval" / "validation_task.json"
+        path = NB_DIR / "eval" / "eval_tasks.json"
     raw = json.loads(path.read_text(encoding="utf-8"))
     return {int(s["id"]): s for s in raw}
 

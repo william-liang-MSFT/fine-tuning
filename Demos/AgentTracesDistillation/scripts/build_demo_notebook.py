@@ -112,12 +112,12 @@ sorted into **categories** — `long_distracting_context`, `restocking_fee_math`
 `multi_item_mixed_outcomes`, `out_of_scope`, etc. — so we can see which
 categories are causing the most pain.
 
-- **Training tasks** (`eval/tasks.json`, 80 scenarios) — used to harvest fine-tuning examples.
-- **Validation tasks** (`eval/validation_task.json`, 20 scenarios) — held out; the fine-tuned model never sees these during training.
+- **Training tasks** (`eval/training_tasks.json`, 80 scenarios) — used to harvest fine-tuning examples.
+- **Validation tasks** (`eval/eval_tasks.json`, 20 scenarios) — held out; the fine-tuned model never sees these during training.
 """))
 
-CELLS.append(code("""train_scenarios = json.loads((EVAL_DIR / "tasks.json").read_text(encoding="utf-8"))
-val_scenarios   = json.loads((EVAL_DIR / "validation_task.json").read_text(encoding="utf-8"))
+CELLS.append(code("""train_scenarios = json.loads((EVAL_DIR / "training_tasks.json").read_text(encoding="utf-8"))
+val_scenarios   = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="utf-8"))
 
 print(f"training tasks:   {len(train_scenarios)}")
 print(f"validation tasks: {len(val_scenarios)}")
@@ -160,7 +160,7 @@ from evaluate_v2 import score_scenario  # noqa: E402
 # scenario spec, then score it the same way the eval pipeline does.
 demo_blob = json.loads((RESULTS_DIR / "demo_transcripts.json").read_text(encoding="utf-8"))
 demo = demo_blob["demos"][0]                # validation sid=HE027, restocking_fee_math
-scenarios = json.loads((EVAL_DIR / "scenarios_holdout.json").read_text(encoding="utf-8"))
+scenarios = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="utf-8"))
 scenario = next(s for s in scenarios if s["name"] == demo["name"])
 
 # evaluate_v2.score_scenario expects a result dict with:

@@ -45,7 +45,7 @@ Notes
   out of the box, but for full parity with `run_baselines.py` you'd register a
   custom evaluator that consumes the same JSONL rows.
 - The 80/20 split is sourced from results/v2_FIXED/{train,heldout}/curated_*_sids.json
-  and re-derived against eval/tasks.json + eval/validation_task.json (which already
+  and re-derived against eval/training_tasks.json + eval/eval_tasks.json (which already
   honor that split today). If you re-partition via reselect_and_reslice.py, just
   rerun this script against the new tasks files.
 """
@@ -207,8 +207,8 @@ Both JSONLs are valid drop-ins for the Foundry Portal "Evaluations" tab
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--train", default=str(EVAL_DIR / "tasks.json"))
-    ap.add_argument("--validation", default=str(EVAL_DIR / "validation_task.json"))
+    ap.add_argument("--train", default=str(EVAL_DIR / "training_tasks.json"))
+    ap.add_argument("--validation", default=str(EVAL_DIR / "eval_tasks.json"))
     ap.add_argument("--out-dir", default=str(EVAL_DIR / "foundry"))
     args = ap.parse_args()
 

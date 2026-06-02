@@ -2,7 +2,7 @@
 """Run full pass^k evaluation matrix for the demo deck.
 
 Runs N_PASSES (default 3) evaluations of {student, teacher-hosted, ft} on
-{tasks.json, validation_task.json}, writes per-pass scoring JSON into
+{training_tasks.json, eval_tasks.json}, writes per-pass scoring JSON into
 ``results/demo_results/{train,validation}/``, and emits ``summary.json``
 with aggregate pass^1 / pass^2 / pass^3 (tau=0.70) for every cell.
 
@@ -44,8 +44,8 @@ FT_MODEL = os.environ.get("FT_MODEL", "gpt-4.1-nano-demo1")
 HOSTED_AGENT = os.environ.get("HOSTED_AGENT_NAME", "demo1-retail-agent-langraph-responses")
 
 TASK_SETS = [
-    ("train",      EVAL_DIR / "tasks.json"),
-    ("validation", EVAL_DIR / "validation_task.json"),
+    ("train",      EVAL_DIR / "training_tasks.json"),
+    ("validation", EVAL_DIR / "eval_tasks.json"),
 ]
 
 

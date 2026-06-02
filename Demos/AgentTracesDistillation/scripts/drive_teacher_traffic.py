@@ -11,7 +11,7 @@ Differs from run_baselines_hosted.py in two ways:
 
 Usage:
     python scripts/drive_teacher_traffic.py \
-        --scenarios eval/scenarios_hard.json --seed 1 --suffix s1
+        --scenarios eval/training_tasks.json --seed 1 --suffix s1
 
 Parallel:
     Launch multiple instances with different --seed values.
@@ -149,7 +149,7 @@ def drive_one(agent_client, customer_client, scenario: dict, seed: int, verbose:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--agent", default="demo1-retail-agent-langraph-responses")
-    ap.add_argument("--scenarios", default=str(NB_DIR / "eval" / "scenarios_hard.json"))
+    ap.add_argument("--scenarios", default=str(NB_DIR / "eval" / "training_tasks.json"))
     ap.add_argument("--seed", type=int, required=True)
     ap.add_argument("--suffix", default="")
     ap.add_argument("--only", default="", help="Comma-separated scenario IDs")

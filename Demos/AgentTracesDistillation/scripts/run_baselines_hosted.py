@@ -13,7 +13,7 @@ Two-phase to avoid 60s App-Insights ingestion wait per scenario:
 
 Usage:
     python scripts/run_baselines_hosted.py --agent demo1-retail-agent-langraph-responses \
-        --scenarios eval/scenarios_hard.json --results-dir v2_hard_demo1 \
+        --scenarios eval/training_tasks.json --results-dir v2_hard_demo1 \
         --suffix .pass1
 """
 from __future__ import annotations
@@ -247,7 +247,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--agent", default="demo1-retail-agent-langraph-responses",
                     help="Hosted Foundry agent name")
-    ap.add_argument("--scenarios", default=str(EVAL_DIR / "scenarios_hard.json"))
+    ap.add_argument("--scenarios", default=str(EVAL_DIR / "training_tasks.json"))
     ap.add_argument("--only", default="", help="Comma-separated scenario IDs")
     ap.add_argument("--results-dir", default="v2_hard_demo1",
                     help="Subdir under results/ to write into")
