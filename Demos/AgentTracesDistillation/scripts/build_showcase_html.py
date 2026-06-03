@@ -1,9 +1,9 @@
 """Full-page, minimalistic, elegant demo replay.
 
 One demo per viewport. Editorial typography, lots of whitespace.
-Each demo has Before (left) and After (right) panels with their own
-circular play button, a 1-line verdict callout, and inline tool blocks
-that surface argument values (the key signal when an arg was wrong).
+Each demo shows the expected resolution at the top, then Before / After
+panels with their own circular play button and inline tool blocks that
+surface argument values (the key signal when an arg was wrong).
 """
 from __future__ import annotations
 
@@ -22,21 +22,6 @@ HEADLINES = [
     "Multi-item cart cancel",
     "Sale item, no defect — should deny",
     "Out-of-scope request",
-]
-
-
-WRONG_NOTES = [
-    "Skipped or mis-tiered the 15% restocking fee, so the refund total was wrong.",
-    "Forced one action across the cart and skipped per-item policy + calc.",
-    "Over-called tools and applied the wrong refund base on a final-sale item.",
-    "Tried to help anyway — even called a tool that doesn't apply.",
-]
-
-IMPROVED_NOTES = [
-    "Calls policy → calc in order and applies the correct 15% restocking fee.",
-    "Resolves each line independently: cancel, exchange, refund where appropriate.",
-    "Checks defect status first, then applies the final-sale rule cleanly.",
-    "Polite refusal and redirect. Zero tool calls.",
 ]
 
 
@@ -147,25 +132,31 @@ body {
   color: var(--ink);
 }
 
-.opener {
-  text-align: center;
-  max-width: 760px;
+.expected {
+  max-width: 860px;
   margin: 0 auto;
-  font-size: 1.02rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-  font-style: italic;
-  padding: 0 24px;
+  padding: 14px 20px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  align-items: baseline;
 }
-.opener::before, .opener::after {
-  font-family: Georgia, serif;
+.expected .label {
+  font-size: 0.66rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 600;
   color: var(--ink-mute);
-  font-size: 1.6rem;
-  line-height: 0;
-  vertical-align: -0.3em;
 }
-.opener::before { content: '“ '; }
-.opener::after  { content: ' ”'; }
+.expected .text {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
 
 /* ── compare grid ──────────────────────────────────────── */
 .compare {
@@ -181,7 +172,7 @@ body {
 
 .side {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   min-height: 0;
   padding: 0 36px;
 }
@@ -224,30 +215,6 @@ body {
 .side.before .iconbtn.play:hover { background: #8a3a2f; border-color: #8a3a2f; }
 .side.after  .iconbtn.play { background: var(--after);  border-color: var(--after);  color: #fff; }
 .side.after  .iconbtn.play:hover { background: #21498a; border-color: #21498a; }
-
-/* ── verdict callout ───────────────────────────────────── */
-.callout {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  margin-bottom: 14px;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  border-left: 3px solid;
-}
-.callout .label {
-  font-size: 0.66rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 700;
-  flex-shrink: 0;
-  padding-top: 1px;
-}
-.callout .text { color: var(--ink); }
-.side.before .callout { background: var(--bad-soft);  border-left-color: var(--bad);  }
-.side.before .callout .label { color: var(--bad); }
-.side.after  .callout { background: var(--good-soft); border-left-color: var(--good); }
-.side.after  .callout .label { color: var(--good); }
 
 /* ── transcript flow ───────────────────────────────────── */
 .script {
@@ -429,7 +396,7 @@ def _build_timeline(side: dict, expected: set, forbidden: set) -> list:
     return events
 
 
-def _render_side(label: str, model: str, kind: str, callout_label: str, callout_text: str, events: list) -> str:
+def _render_side(label: str, model: str, kind: str, events: list) -> str:
     blob = json.dumps({"events": events}, ensure_ascii=False).replace("</", "<\\/")
     return f"""
     <div class="side {kind}" data-side="{kind}">
@@ -442,10 +409,6 @@ def _render_side(label: str, model: str, kind: str, callout_label: str, callout_
           <button class="iconbtn" data-action="reset" title="Reset">↻</button>
           <button class="iconbtn play" data-action="play" title="Play">▶</button>
         </div>
-      </div>
-      <div class="callout">
-        <span class="label">{_esc(callout_label)}</span>
-        <span class="text">{_esc(callout_text)}</span>
       </div>
       <div class="script" data-script></div>
       <script type="application/json" class="events-data">{blob}</script>
@@ -460,19 +423,21 @@ def _render_slide(demo: dict, idx: int, total: int, models: dict) -> str:
     s_events = _build_timeline(demo.get("student", {}), expected, forbidden)
     f_events = _build_timeline(demo.get("ft", {}), expected, forbidden)
     headline = HEADLINES[idx - 1] if idx - 1 < len(HEADLINES) else demo.get("headline", "")
-    wrong = WRONG_NOTES[idx - 1] if idx - 1 < len(WRONG_NOTES) else ""
-    improved = IMPROVED_NOTES[idx - 1] if idx - 1 < len(IMPROVED_NOTES) else ""
+    expected_text = sc.get("expected_resolution_summary", "") or ""
     return f"""
 <section class="slide" id="slide-{idx}" data-slide="{idx}">
   <div class="intro">
     <div class="eyebrow">Demo {idx} of {total}</div>
     <h1>{_esc(headline)}</h1>
   </div>
-  <div class="opener">{_esc(sc.get('user_message', ''))}</div>
+  <div class="expected">
+    <span class="label">Expected</span>
+    <span class="text">{_esc(expected_text)}</span>
+  </div>
   <div class="compare">
-    {_render_side("Before", models['student_model'], "before", "What went wrong", wrong, s_events)}
+    {_render_side("Before", models['student_model'], "before", s_events)}
     <div class="divider"></div>
-    {_render_side("After", models['ft_model'], "after", "What improved", improved, f_events)}
+    {_render_side("After", models['ft_model'], "after", f_events)}
   </div>
 </section>
 """
