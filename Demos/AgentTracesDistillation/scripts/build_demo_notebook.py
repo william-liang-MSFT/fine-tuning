@@ -327,99 +327,122 @@ result = {
 tool_calls = per_scenario["tool_calls"]
 
 banner(f"CACHED SCORING — {SHOWCASE_NAME}",
-       f"source: train / teacher / pass^1   ·   {len(tool_calls)} tool calls")
+       f"source: train / teacher / pass^1   ·   {len(tool_calls)} tool calls captured")
 
-def _bar(score: float, n: int = 30) -> str:
+def _bar(score: float, n: int = 32) -> str:
     fill = int(round(score * n))
     return "█" * fill + "░" * (n - fill)
 
-section("Scoring, dimension by dimension")
+def _step_header(n: int, total: int, title: str, weight: float, checks: str) -> None:
+    print()
+    print("  " + "═" * 72)
+    print(f"  STEP {n} of {total}  ·  {title:<40}weight = {int(weight*100)}%")
+    print("  " + "═" * 72)
+    print(f"  what it checks:  {checks}")
+
+def _step_score(score: float, weight: float) -> None:
+    print()
+    print(f"  ▸ SCORE   {_bar(score)}   {score:>5.3f} / 1.000")
+    print(f"            └─ contribution = {score:.3f} × {weight:.2f} = {score*weight:.3f}")
+
 contributions: list[tuple[str, float, float]] = []
 
 # ── Step 1: Decision correctness ──
-print()
-print("     ▸ Step 1/4 — Decision correctness   (weight 35%)")
-print("       checks: right action + reason per line item, no over-resolution")
+_step_header(1, 4, "Decision correctness", 0.35,
+             "right action + reason per line item, no over-resolution")
 expected_actions = scenario.get("expected_actions", {})
-print("       expected per-item actions:")
+actual_actions   = _extract_actions_v2(_normalize_tool_calls(tool_calls))
+print()
+print("  ▸ Expected per-item actions:")
 for k, exp in expected_actions.items():
-    print(f"         · {k:<20}  action={exp.get('action')!r:<20} reason={exp.get('reason')!r}")
-actual_actions = _extract_actions_v2(_normalize_tool_calls(tool_calls))
-print("       actual per-item actions extracted from tool calls:")
+    print(f"      • {k:<22}  action={exp.get('action'):<18} reason={exp.get('reason')}")
+print()
+print("  ▸ Actual per-item actions (extracted from tool calls):")
 if actual_actions:
     for k, act in actual_actions.items():
         exp_a = (expected_actions.get(k) or {}).get("action")
         exp_r = (expected_actions.get(k) or {}).get("reason")
-        mark_a = "✅" if exp_a == act.get("action") else "⚠️"
-        mark_r = "✅" if (exp_r is None or exp_r == act.get("reason")) else "⚠️"
-        print(f"         · {k:<20}  {mark_a} action  {act.get('action')!r:<20}"
-              f"   {mark_r} reason  {act.get('reason')!r}")
+        mark_a = "✅ match" if exp_a == act.get("action") else "⚠️  differs"
+        mark_r = "✅ match" if (exp_r is None or exp_r == act.get("reason")) else "⚠️  differs"
+        print(f"      • {k:<22}  action={act.get('action'):<18} reason={act.get('reason')}")
+        print(f"        {' '*22}  {mark_a:<18}        {mark_r}")
+    missing = [k for k in expected_actions if k not in actual_actions]
+    for k in missing:
+        print(f"      • {k:<22}  ❌ MISSING from tool calls")
 else:
-    print("         (none extracted)")
+    print("      (none extracted)")
 sc1 = score_decision_correctness(result, scenario)
-print(f"       score: {_bar(sc1)}  {sc1:.3f}    "
-      f"→ contribution = {sc1:.3f} × 0.35 = {sc1*0.35:.3f}")
+_step_score(sc1, 0.35)
 contributions.append(("decision", sc1, 0.35))
 
 # ── Step 2: Tool trajectory ──
-print()
-print("     ▸ Step 2/4 — Tool trajectory   (weight 25%)")
-print("       checks: right tools in right order, no forbidden tools")
+_step_header(2, 4, "Tool trajectory", 0.25,
+             "right tools in right order, no forbidden tools")
 expected_tools = scenario.get("expected_tools", [])
-forbidden     = scenario.get("forbidden_tools", [])
-actual_tools  = [tc["name"] for tc in tool_calls]
+forbidden      = scenario.get("forbidden_tools", [])
+actual_tools   = [tc["name"] for tc in tool_calls]
 exp_set, act_set = set(expected_tools), set(actual_tools)
-print(f"       expected tools  ({len(expected_tools)}):")
+print()
+print(f"  ▸ Expected tools  ({len(expected_tools)}):")
 for t in expected_tools:
     mark = "✅ called" if t in act_set else "❌ MISSING"
-    print(f"         · {t:<28}  {mark}")
-print(f"       actual tools    ({len(actual_tools)}, in order):")
+    print(f"      • {t:<30}  {mark}")
+print()
+print(f"  ▸ Actual tools called  ({len(actual_tools)}, in order):")
 for i, t in enumerate(actual_tools, 1):
-    mark = "✅" if t in exp_set else "⚠️ unexpected"
-    print(f"         {i:>2}. {t:<28}  {mark}")
+    mark = "✅" if t in exp_set else "⚠️  unexpected"
+    print(f"      {i:>2}. {t:<30}  {mark}")
 if forbidden:
-    print(f"       forbidden tools ({len(forbidden)}):")
+    print()
+    print(f"  ▸ Forbidden tools  ({len(forbidden)}):")
     for t in forbidden:
-        mark = "❌ called!" if t in act_set else "✅ avoided"
-        print(f"         · {t:<28}  {mark}")
+        mark = "❌ CALLED!" if t in act_set else "✅ avoided"
+        print(f"      • {t:<30}  {mark}")
 sc2 = score_tool_usage(result, scenario)
-print(f"       score: {_bar(sc2)}  {sc2:.3f}    "
-      f"→ contribution = {sc2:.3f} × 0.25 = {sc2*0.25:.3f}")
+_step_score(sc2, 0.25)
 contributions.append(("tools", sc2, 0.25))
 
 # ── Step 3: Financial accuracy ──
-print()
-print("     ▸ Step 3/4 — Financial accuracy   (weight 20%)")
-print("       checks: refund / restocking amounts within tolerance")
+_step_header(3, 4, "Financial accuracy", 0.20,
+             "refund / restocking amounts within tolerance")
 expected_amounts = scenario.get("expected_amounts", {}) or {}
 if expected_amounts:
-    print("       expected amounts:")
+    print()
+    print("  ▸ Expected amounts:")
     for k, v in expected_amounts.items():
-        print(f"         · {k:<22}  ${v:>8.2f}")
+        print(f"      • {k:<24}  ${v:>9.2f}")
+print()
+print("  ▸ Checked against agent's final message and submit_resolution args")
 sc3 = score_financial_accuracy(result, scenario)
-print(f"       score: {_bar(sc3)}  {sc3:.3f}    "
-      f"→ contribution = {sc3:.3f} × 0.20 = {sc3*0.20:.3f}")
+_step_score(sc3, 0.20)
 contributions.append(("financial", sc3, 0.20))
 
 # ── Step 4: Communication ──
+_step_header(4, 4, "Communication quality", 0.20,
+             "specific amounts, per-item summary, policy keywords")
 print()
-print("     ▸ Step 4/4 — Communication   (weight 20%)")
-print("       checks: specific amounts, per-item summary, policy keywords")
+print("  ▸ Checked against agent's final message to the customer")
 sc4 = score_communication(result, scenario)
-print(f"       score: {_bar(sc4)}  {sc4:.3f}    "
-      f"→ contribution = {sc4:.3f} × 0.20 = {sc4*0.20:.3f}")
+_step_score(sc4, 0.20)
 contributions.append(("comm", sc4, 0.20))
 
-# ── Combine ──
+# ── Final verdict ──
 print()
-print(f"     {'─' * 64}")
+print()
+print("  " + "═" * 72)
+print("  FINAL SCORE")
+print("  " + "═" * 72)
+print(f"      {'dimension':<14}{'score':>8}  {'×':^3}  {'weight':>6}  {'=':^3}  {'contribution':>12}")
+print(f"      {'-'*14}{'-'*8}  {'-'*3}  {'-'*6}  {'-'*3}  {'-'*12}")
+for name, s, w in contributions:
+    print(f"      {name:<14}{s:>8.3f}  {'×':^3}  {w:>6.2f}  {'=':^3}  {s*w:>12.3f}")
 combined = sum(s * w for _, s, w in contributions)
 verdict  = "✅  PASS" if combined >= 0.70 else "❌  FAIL"
-formula  = "  +  ".join(f"{s:.3f}·{w:.2f}" for _, s, w in contributions)
-contribs = "  +  ".join(f"{s*w:.3f}"        for _, s, w in contributions)
-print(f"     COMBINED  =  {formula}")
-print(f"               =  {contribs}")
-print(f"               =  {combined:.3f}     {verdict}   (bar = 0.70)")
+print(f"      {'-'*14}{'-'*8}  {'-'*3}  {'-'*6}  {'-'*3}  {'-'*12}")
+print(f"      {'COMBINED':<14}{'':>8}  {' ':^3}  {'':>6}  {' ':^3}  {combined:>12.3f}")
+print()
+print(f"      pass bar  =  0.700")
+print(f"      verdict   =  {verdict}    (combined {combined:.3f} {'≥' if combined>=0.70 else '<'} 0.700)")
 """))
 
 # =====================================================================
