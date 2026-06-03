@@ -196,103 +196,235 @@ wrap_field("expected",  ex['expected_resolution_summary'])
 # =====================================================================
 # 3. Scoring
 # =====================================================================
-CELLS.append(md("""## 3. How a scenario is scored
+CELLS.append(md("""## 3. How a scenario is scored — live, against the hosted teacher
 
-A scorer (`eval/evaluate_v2.py`) grades the agent on four dimensions and combines them into a single 0–1 number. A scenario **passes** when its combined score reaches **0.70**.
+This is a **live** end-to-end demo. The cell:
+
+1. Drives a fresh customer ↔ teacher conversation against the **deployed Foundry agent** (`retail-agent-langgraph` wrapping `gpt-5.5`) — every customer turn and every teacher reply prints as it arrives.
+2. Polls App Insights for the teacher's tool spans (a real-world ingestion delay you have to wait for once per conversation).
+3. Runs the four dimension scorers from `eval/evaluate_v2.py` one at a time, printing the **expected vs. actual tools** for steps 1 and 2 so the grading is auditable.
+
+Scoring dimensions (same calibration as everywhere else in this notebook):
 
 | Dimension | Weight | What it checks |
 |---|---:|---|
 | **Decision correctness** | 35% | Right action and reason per line item, no over-resolution |
-| **Tool trajectory**      | 25% | Right tools called in the right order; no forbidden tools |
+| **Tool trajectory**      | 25% | Right tools in the right order; no forbidden tools |
 | **Financial accuracy**   | 20% | Refund / restocking amounts within tolerance |
 | **Communication**        | 20% | Specific amounts, per-item summary, policy keywords |
 
-The weights and the 0.70 bar are calibrated on a separate set of scenarios; this
-notebook reuses them.
+The chosen scenario is `H059: counter_factual_claims` — the customer falsely claims gold tier and asks for a refund. The teacher must *not* trust the tier claim and must apply the standard-tier 15% restocking fee.
 
-The cell below runs the scorer **live, dimension by dimension**, on one real
-cached **teacher** conversation (training scenario `H059`, a
-*counter-factual-claims* case where the customer falsely claims gold tier and
-the teacher correctly refuses to trust that claim). The cell loads the cached
-transcript + tool calls from the teacher's baseline eval (`pass^1`), re-runs
-each of the four dimension scorers, then shows the weighted-sum formula and
-verdict — so the dimension breakdown is concrete, not abstract.
+> Requires Azure auth (`azd auth login` or `az login`) and the `.env` values for `AZURE_OPENAI_API_KEY` / `OPENAI_BASE_URL`. Expect ~30–60 s for the conversation plus a one-time App Insights ingestion wait (~30–90 s).
 """))
 
-CELLS.append(code("""import sys
+CELLS.append(code("""import importlib
+import sys
 import time
+
 sys.path.insert(0, str(EVAL_DIR))
-from evaluate_v2 import (  # noqa: E402
+sys.path.insert(0, str(NB_DIR / "scripts"))
+
+from azure.identity import DefaultAzureCredential
+from azure.ai.projects import AIProjectClient
+
+import evaluate_v2 as _ev2
+import appinsights_tools as _ai
+import run_baselines_hosted as _rbh
+_ev2 = importlib.reload(_ev2)
+_ai  = importlib.reload(_ai)
+_rbh = importlib.reload(_rbh)
+from evaluate_v2 import (
     score_decision_correctness, score_tool_usage,
     score_financial_accuracy, score_communication,
+    _extract_actions_v2, _normalize_tool_calls,
 )
 
-# ── Load one cached teacher conversation from the baseline eval (training/H059) ──
-TEACHER_CACHE = RESULTS_DIR / "train" / (
-    "baseline__mt__teacher__demo1-retail-agent-langraph-responses.v2.pass1.json"
-)
-SHOWCASE_SID = "4"   # scenario_id 4 == H059 counter_factual_claims
+# ── Scenario ──
+SHOWCASE_NAME = "H059: counter_factual_claims"
+scenario = next(s for s in train_scenarios if s["name"] == SHOWCASE_NAME)
+HOSTED_AGENT_NAME = os.environ.get("HOSTED_AGENT_NAME", "demo1-retail-agent-langraph-responses")
 
-cache = json.loads(TEACHER_CACHE.read_text(encoding="utf-8"))
-per_scenario = next(ps for ps in cache["per_scenario"] if ps["scenario_id"] == SHOWCASE_SID)
-
-# Reconstruct the (response, messages, tool_calls) shape evaluate_v2 expects.
-final_text = next(
-    (t["content"] for t in reversed(per_scenario["transcript"]) if t["role"] == "agent"),
-    "",
-)
-result = {
-    "response":   final_text,
-    "messages":   per_scenario["transcript"],
-    "tool_calls": per_scenario["tool_calls"],
-}
-scenario = next(s for s in train_scenarios if s["name"] == per_scenario["scenario_name"])
-
-# ── Context ──
-banner(f"LIVE SCORING — {scenario['name']}",
-       f"Teacher: {TEACHER_MODEL}   ·   cached run: train / pass^1")
-wrap_field("customer", '"' + scenario['user_message'] + '"')
+banner(f"LIVE TEACHER RUN — {scenario['name']}",
+       f"Teacher: {TEACHER_MODEL}   ·   hosted agent: {HOSTED_AGENT_NAME}")
+wrap_field("scenario", '"' + scenario['user_message'] + '"')
 wrap_field("note",     "⚠️  Customer falsely claims 'gold tier' — the teacher must NOT trust this.")
 wrap_field("expected", scenario['expected_resolution_summary'])
 
-# ── Step-by-step scoring ──
-STEPS = [
-    ("Decision correctness", score_decision_correctness, 0.35,
-     "right action + reason per line item, no over-resolution"),
-    ("Tool trajectory",      score_tool_usage,           0.25,
-     "right tools in right order, no forbidden tools"),
-    ("Financial accuracy",   score_financial_accuracy,   0.20,
-     "refund / restocking amounts within tolerance"),
-    ("Communication",        score_communication,        0.20,
-     "specific amounts, per-item summary, policy keywords"),
-]
+# ──────────────────────────────────────────────────────────────────────
+#  PHASE 1 — drive the conversation live
+# ──────────────────────────────────────────────────────────────────────
+section("Phase 1 — customer ↔ teacher conversation  (LIVE)")
+pc = AIProjectClient(endpoint=_rbh.PROJECT_ENDPOINT,
+                     credential=DefaultAzureCredential(),
+                     allow_preview=True)
+agent_client = pc.get_openai_client(agent_name=HOSTED_AGENT_NAME)
 
-section("Scoring, dimension by dimension")
-scores = []
-for i, (name, fn, weight, checks) in enumerate(STEPS, 1):
+DEMO_MAX_ROUNDS = 5
+transcript: list[dict] = []
+response_ids: list[str] = []
+previous_id = None
+
+for r in range(1, DEMO_MAX_ROUNDS + 1):
+    # Customer simulator
+    cust = _rbh._customer_reply(transcript, scenario["user_message"])
+    ended = "[END]" in cust
+    cust = cust.replace("[END]", "").strip()
+    if not cust and ended:
+        break
+    if not cust:
+        break
+    transcript.append({"role": "customer", "content": cust})
     print()
-    print(f"     ▸ Step {i}/4 — {name}   (weight {int(weight*100)}%)")
-    print(f"       checks: {checks}")
+    print(f"   👤 customer  (round {r})")
+    for line in textwrap.wrap(cust, width=88) or [""]:
+        print(f"      {line}")
+
+    # Teacher (hosted Foundry agent)
+    kw = {"input": cust}
+    if previous_id:
+        kw["previous_response_id"] = previous_id
     t0 = time.perf_counter()
-    score = fn(result, scenario)
-    dt_ms = (time.perf_counter() - t0) * 1000
-    contribution = score * weight
-    bar_len = int(round(score * 30))
-    bar = "█" * bar_len + "░" * (30 - bar_len)
-    print(f"       score : {bar}  {score:.3f}    "
-          f"contribution = {score:.3f} × {weight:.2f} = {contribution:.3f}    "
-          f"({dt_ms:.1f} ms)")
-    scores.append((name, score, weight, contribution))
+    print(f"   🤖 teacher   (round {r}, thinking…)", end="", flush=True)
+    try:
+        resp = agent_client.responses.create(**kw)
+    except Exception as e:
+        print(f"\\n   ❌ teacher call failed: {type(e).__name__}: {str(e)[:160]}")
+        raise
+    dt = time.perf_counter() - t0
+    previous_id = resp.id
+    response_ids.append(resp.id)
+    agent_text = (resp.output_text or "").strip()
+    transcript.append({"role": "agent", "content": agent_text})
+    print(f"  ←  {dt:.1f}s, response_id={resp.id[-12:]}")
+    for raw in agent_text.splitlines():
+        for line in textwrap.wrap(raw, width=88) or [""]:
+            print(f"      {line}")
+    if ended:
+        break
+
+print()
+print(f"   ── conversation done: {len(transcript)//2} rounds, "
+      f"{len(response_ids)} teacher response(s) ──")
+
+# ──────────────────────────────────────────────────────────────────────
+#  PHASE 2 — fetch tool traces from App Insights (poll until ingested)
+# ──────────────────────────────────────────────────────────────────────
+section("Phase 2 — fetching tool traces from App Insights")
+print(f"   polling for {len(response_ids)} response_id(s) (ingestion delay ~30–90 s)…")
+deadline = time.time() + 180
+attempt = 0
+rid_to_calls: dict = {}
+while time.time() < deadline:
+    attempt += 1
+    rid_to_calls = _rbh.batch_fetch_tool_calls(response_ids, wait_sec=0)
+    n_with = sum(1 for v in rid_to_calls.values() if v)
+    if n_with == len(response_ids):
+        print(f"   attempt {attempt}: ✅  all {n_with}/{len(response_ids)} have tool spans")
+        break
+    print(f"   attempt {attempt}: {n_with}/{len(response_ids)} ready, waiting 10s…")
+    time.sleep(10)
+
+tool_calls: list[dict] = []
+for rid in response_ids:
+    tool_calls.extend(rid_to_calls.get(rid, []))
+
+# ──────────────────────────────────────────────────────────────────────
+#  PHASE 3 — step-by-step scoring
+# ──────────────────────────────────────────────────────────────────────
+final_text = next((t["content"] for t in reversed(transcript) if t["role"] == "agent"), "")
+result = {"response": final_text, "messages": transcript, "tool_calls": tool_calls}
+
+def _bar(score: float, n: int = 30) -> str:
+    fill = int(round(score * n))
+    return "█" * fill + "░" * (n - fill)
+
+section("Phase 3 — scoring, dimension by dimension")
+contributions: list[tuple[str, float, float]] = []
+
+# ── Step 1: Decision correctness ──
+print()
+print("     ▸ Step 1/4 — Decision correctness   (weight 35%)")
+print("       checks: right action + reason per line item, no over-resolution")
+expected_actions = scenario.get("expected_actions", {})
+print("       expected per-item actions:")
+for k, exp in expected_actions.items():
+    print(f"         · {k:<12}  action={exp.get('action')!r:<14} reason={exp.get('reason')!r}")
+actual_actions = _extract_actions_v2(_normalize_tool_calls(tool_calls))
+print("       actual per-item actions extracted from tool calls:")
+if actual_actions:
+    for k, act in actual_actions.items():
+        exp_a = (expected_actions.get(k) or {}).get("action")
+        exp_r = (expected_actions.get(k) or {}).get("reason")
+        mark_a = "✅" if exp_a == act.get("action") else "⚠️"
+        mark_r = "✅" if (exp_r is None or exp_r == act.get("reason")) else "⚠️"
+        print(f"         {mark_a} action  {act.get('action')!r:<14}"
+              f"   {mark_r} reason  {act.get('reason')!r}")
+else:
+    print("         (none extracted)")
+sc1 = score_decision_correctness(result, scenario)
+print(f"       score: {_bar(sc1)}  {sc1:.3f}    "
+      f"→ contribution = {sc1:.3f} × 0.35 = {sc1*0.35:.3f}")
+contributions.append(("decision", sc1, 0.35))
+
+# ── Step 2: Tool trajectory ──
+print()
+print("     ▸ Step 2/4 — Tool trajectory   (weight 25%)")
+print("       checks: right tools in right order, no forbidden tools")
+expected_tools = scenario.get("expected_tools", [])
+forbidden     = scenario.get("forbidden_tools", [])
+actual_tools  = [tc["name"] for tc in tool_calls]
+exp_set, act_set = set(expected_tools), set(actual_tools)
+print(f"       expected tools  ({len(expected_tools)}):")
+for t in expected_tools:
+    mark = "✅ called" if t in act_set else "❌ MISSING"
+    print(f"         · {t:<28}  {mark}")
+print(f"       actual tools    ({len(actual_tools)}, in order):")
+for i, t in enumerate(actual_tools, 1):
+    mark = "✅" if t in exp_set else "⚠️ unexpected"
+    print(f"         {i:>2}. {t:<28}  {mark}")
+if forbidden:
+    print(f"       forbidden tools ({len(forbidden)}):")
+    for t in forbidden:
+        mark = "❌ called!" if t in act_set else "✅ avoided"
+        print(f"         · {t:<28}  {mark}")
+sc2 = score_tool_usage(result, scenario)
+print(f"       score: {_bar(sc2)}  {sc2:.3f}    "
+      f"→ contribution = {sc2:.3f} × 0.25 = {sc2*0.25:.3f}")
+contributions.append(("tools", sc2, 0.25))
+
+# ── Step 3: Financial accuracy ──
+print()
+print("     ▸ Step 3/4 — Financial accuracy   (weight 20%)")
+print("       checks: refund / restocking amounts within tolerance")
+expected_amounts = scenario.get("expected_amounts", {}) or {}
+if expected_amounts:
+    print("       expected amounts:")
+    for k, v in expected_amounts.items():
+        print(f"         · {k:<22}  ${v:>8.2f}")
+sc3 = score_financial_accuracy(result, scenario)
+print(f"       score: {_bar(sc3)}  {sc3:.3f}    "
+      f"→ contribution = {sc3:.3f} × 0.20 = {sc3*0.20:.3f}")
+contributions.append(("financial", sc3, 0.20))
+
+# ── Step 4: Communication ──
+print()
+print("     ▸ Step 4/4 — Communication   (weight 20%)")
+print("       checks: specific amounts, per-item summary, policy keywords")
+sc4 = score_communication(result, scenario)
+print(f"       score: {_bar(sc4)}  {sc4:.3f}    "
+      f"→ contribution = {sc4:.3f} × 0.20 = {sc4*0.20:.3f}")
+contributions.append(("comm", sc4, 0.20))
 
 # ── Combine ──
 print()
 print(f"     {'─' * 64}")
-formula_terms = "  +  ".join(f"{s:.3f}·{w:.2f}" for _, s, w, _ in scores)
-contrib_terms = "  +  ".join(f"{c:.3f}"        for _, _, _, c in scores)
-combined = sum(c for *_ , c in scores)
+combined = sum(s * w for _, s, w in contributions)
 verdict  = "✅  PASS" if combined >= 0.70 else "❌  FAIL"
-print(f"     COMBINED  =  {formula_terms}")
-print(f"               =  {contrib_terms}")
+formula  = "  +  ".join(f"{s:.3f}·{w:.2f}" for _, s, w in contributions)
+contribs = "  +  ".join(f"{s*w:.3f}"        for _, s, w in contributions)
+print(f"     COMBINED  =  {formula}")
+print(f"               =  {contribs}")
 print(f"               =  {combined:.3f}     {verdict}   (bar = 0.70)")
 """))
 
