@@ -486,7 +486,7 @@ def _render_side(label: str, kind: str, model_name: str, events: list[dict], n_r
   </div>
   <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
   <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{_esc(json.dumps({"events": events, "rounds": n_rounds, "tools": n_tools, "stop": stop}))}</script>
+  <script type="application/json" class="events-data">{json.dumps({"events": events, "rounds": n_rounds, "tools": n_tools, "stop": stop}).replace("</", "<\\/")}</script>
 </div>
 """
 
