@@ -45,6 +45,8 @@ DESCRIPTIONS = [
 CSS = r"""
 :root {
   --bg: #fafaf7;
+  --surface: #ffffff;
+  --topbar: rgba(250, 250, 247, 0.85);
   --ink: #1a1a1a;
   --ink-soft: #555;
   --ink-mute: #9a9a93;
@@ -60,6 +62,32 @@ CSS = r"""
   --warn-soft: #f8efdc;
   --bad: #a83b2c;
   --bad-soft: #f5e3df;
+  --good-glyph-bg: rgba(78,122,77,0.14);
+  --before-hover: #8a3a2f;
+  --after-hover: #21498a;
+}
+body.dark {
+  --bg: #0c0d10;
+  --surface: #16181c;
+  --topbar: rgba(12, 13, 16, 0.88);
+  --ink: #f4f1ea;
+  --ink-soft: #c8c4ba;
+  --ink-mute: #7a766e;
+  --rule: #2a2d32;
+  --customer: #1c1f25;
+  --before: #ff8676;
+  --before-soft: #2a1612;
+  --after: #7eb1ff;
+  --after-soft: #122236;
+  --good: #88d186;
+  --good-soft: #13241a;
+  --warn: #f0b454;
+  --warn-soft: #2a1f10;
+  --bad: #ff7361;
+  --bad-soft: #2a1410;
+  --good-glyph-bg: rgba(136, 209, 134, 0.18);
+  --before-hover: #ff6b58;
+  --after-hover: #a4c7ff;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -71,6 +99,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
+  transition: background 240ms ease, color 240ms ease;
 }
 
 /* ── top bar ───────────────────────────────────────────── */
@@ -81,11 +110,13 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 32px;
   z-index: 50;
-  background: rgba(250, 250, 247, 0.85);
+  background: var(--topbar);
   backdrop-filter: saturate(150%) blur(8px);
   -webkit-backdrop-filter: saturate(150%) blur(8px);
   border-bottom: 1px solid var(--rule);
+  transition: background 240ms ease, border-color 240ms ease;
 }
+.topbar-right { display: flex; align-items: center; gap: 20px; }
 .brand {
   font-size: 0.75rem;
   letter-spacing: 0.22em;
@@ -207,19 +238,35 @@ body {
   width: 36px; height: 36px;
   border-radius: 50%;
   border: 1px solid var(--rule);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: all 180ms ease;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
 }
-.iconbtn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.iconbtn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .iconbtn.play { width: 42px; height: 42px; font-size: 0.95rem; }
 .side.before .iconbtn.play { background: var(--before); border-color: var(--before); color: #fff; }
-.side.before .iconbtn.play:hover { background: #8a3a2f; border-color: #8a3a2f; }
+.side.before .iconbtn.play:hover { background: var(--before-hover); border-color: var(--before-hover); }
 .side.after  .iconbtn.play { background: var(--after);  border-color: var(--after);  color: #fff; }
-.side.after  .iconbtn.play:hover { background: #21498a; border-color: #21498a; }
+.side.after  .iconbtn.play:hover { background: var(--after-hover); border-color: var(--after-hover); }
+body.dark .side.before .iconbtn.play,
+body.dark .side.after  .iconbtn.play { color: #0c0d10; }
+
+/* theme toggle */
+.theme-toggle {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.95rem;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.theme-toggle:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); transform: scale(1.05); }
 
 /* ── transcript flow ───────────────────────────────────── */
 .script {
@@ -287,7 +334,7 @@ body {
   padding: 1px 7px;
   border-radius: 3px;
   color: var(--good);
-  background: rgba(78,122,77,0.14);
+  background: var(--good-glyph-bg);
   font-weight: 600;
 }
 .toolcall .name {
@@ -318,7 +365,7 @@ body {
 .typing {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 12px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: 14px;
   margin-bottom: 12px;
@@ -344,7 +391,7 @@ body {
   display: flex; gap: 8px;
   z-index: 50;
 }
-.arrows .iconbtn { background: #fff; }
+.arrows .iconbtn { background: var(--surface); }
 
 @media (max-width: 980px) {
   .compare { grid-template-columns: 1fr; }
@@ -606,9 +653,34 @@ JS = r"""
     });
   }
 
+  function setupTheme() {
+    const btn = document.querySelector('[data-theme-toggle]');
+    if (!btn) return;
+    const KEY = 'showcase-theme';
+    function apply(mode) {
+      if (mode === 'dark') {
+        document.body.classList.add('dark');
+        btn.textContent = '☀';
+        btn.setAttribute('aria-label', 'Switch to light theme');
+      } else {
+        document.body.classList.remove('dark');
+        btn.textContent = '☾';
+        btn.setAttribute('aria-label', 'Switch to dark high-contrast theme');
+      }
+    }
+    const saved = localStorage.getItem(KEY) || 'light';
+    apply(saved);
+    btn.addEventListener('click', () => {
+      const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+      localStorage.setItem(KEY, next);
+      apply(next);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.side').forEach(setupSide);
     setupNav();
+    setupTheme();
   });
 })();
 """
@@ -643,7 +715,10 @@ def main() -> None:
 <div class="topbar">
   <div class="brand">Distillation · Before / After</div>
   <div class="dots">{dots_html}</div>
-  <div class="counter">01 / {total:02d}</div>
+  <div class="topbar-right">
+    <div class="counter">01 / {total:02d}</div>
+    <button class="theme-toggle" data-theme-toggle title="Toggle dark / high contrast">☾</button>
+  </div>
 </div>
 <div class="deck">
   {slides_html}
