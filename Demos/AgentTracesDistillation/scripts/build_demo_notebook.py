@@ -210,51 +210,90 @@ A scorer (`eval/evaluate_v2.py`) grades the agent on four dimensions and combine
 The weights and the 0.70 bar are calibrated on a separate set of scenarios; this
 notebook reuses them.
 
-The cell below runs the scorer **live** on one real cached conversation (the
-FT model on validation scenario `HE027`, a restocking-fee math case) so the
-dimension breakdown is concrete, not abstract.
+The cell below runs the scorer **live, dimension by dimension**, on one real
+cached **teacher** conversation (training scenario `H059`, a
+*counter-factual-claims* case where the customer falsely claims gold tier and
+the teacher correctly refuses to trust that claim). The cell loads the cached
+transcript + tool calls from the teacher's baseline eval (`pass^1`), re-runs
+each of the four dimension scorers, then shows the weighted-sum formula and
+verdict — so the dimension breakdown is concrete, not abstract.
 """))
 
 CELLS.append(code("""import sys
+import time
 sys.path.insert(0, str(EVAL_DIR))
-from evaluate_v2 import score_scenario  # noqa: E402
+from evaluate_v2 import (  # noqa: E402
+    score_decision_correctness, score_tool_usage,
+    score_financial_accuracy, score_communication,
+)
 
-# Pull one cached conversation (FT model on validation/HE027) and the full
-# scenario spec, then score it the same way the eval pipeline does.
-demo_blob = json.loads((RESULTS_DIR / "demo_transcripts.json").read_text(encoding="utf-8"))
-demo = demo_blob["demos"][0]                # validation sid=HE027, restocking_fee_math
-scenarios = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="utf-8"))
-scenario = next(s for s in scenarios if s["name"] == demo["name"])
+# ── Load one cached teacher conversation from the baseline eval (training/H059) ──
+TEACHER_CACHE = RESULTS_DIR / "train" / (
+    "baseline__mt__teacher__demo1-retail-agent-langraph-responses.v2.pass1.json"
+)
+SHOWCASE_SID = "4"   # scenario_id 4 == H059 counter_factual_claims
 
-ft = demo["ft"]
+cache = json.loads(TEACHER_CACHE.read_text(encoding="utf-8"))
+per_scenario = next(ps for ps in cache["per_scenario"] if ps["scenario_id"] == SHOWCASE_SID)
+
+# Reconstruct the (response, messages, tool_calls) shape evaluate_v2 expects.
+final_text = next(
+    (t["content"] for t in reversed(per_scenario["transcript"]) if t["role"] == "agent"),
+    "",
+)
 result = {
-    "response":   ft["final_response"],
-    "messages":   ft["transcript"],
-    "tool_calls": ft["tool_calls"],
+    "response":   final_text,
+    "messages":   per_scenario["transcript"],
+    "tool_calls": per_scenario["tool_calls"],
 }
-scores = score_scenario(result, scenario)
+scenario = next(s for s in train_scenarios if s["name"] == per_scenario["scenario_name"])
 
-banner("LIVE SCORING — HE027 / restocking_fee_math",
-       f"FT model: {demo_blob['ft_model']}")
-wrap_field("scenario",  scenario['name'])
-wrap_field("customer",  '"' + scenario['user_message'] + '"')
+# ── Context ──
+banner(f"LIVE SCORING — {scenario['name']}",
+       f"Teacher: {TEACHER_MODEL}   ·   cached run: train / pass^1")
+wrap_field("customer", '"' + scenario['user_message'] + '"')
+wrap_field("note",     "⚠️  Customer falsely claims 'gold tier' — the teacher must NOT trust this.")
+wrap_field("expected", scenario['expected_resolution_summary'])
 
-section("Tool sequence")
-for i, tc in enumerate(ft['tool_calls'], 1):
-    print(f"     {i}. {tc['name']}")
-
-section("Dimension scores")
-DIMS = [
-    ("Decision correctness",  scores['decision_correctness'],  0.35),
-    ("Tool usage",            scores['tool_usage'],            0.25),
-    ("Financial accuracy",    scores['financial_accuracy'],    0.20),
-    ("Communication quality", scores['communication_quality'], 0.20),
+# ── Step-by-step scoring ──
+STEPS = [
+    ("Decision correctness", score_decision_correctness, 0.35,
+     "right action + reason per line item, no over-resolution"),
+    ("Tool trajectory",      score_tool_usage,           0.25,
+     "right tools in right order, no forbidden tools"),
+    ("Financial accuracy",   score_financial_accuracy,   0.20,
+     "refund / restocking amounts within tolerance"),
+    ("Communication",        score_communication,        0.20,
+     "specific amounts, per-item summary, policy keywords"),
 ]
-for name, val, wt in DIMS:
-    print(f"     {name:<24}  {val:.3f}   (weight {int(wt*100)}%)")
-print(f"     {'─' * 58}")
-verdict = "✅  PASS" if scores['combined'] >= 0.70 else "❌  FAIL"
-print(f"     {'COMBINED':<24}  {scores['combined']:.3f}   {verdict}   (bar = 0.70)")
+
+section("Scoring, dimension by dimension")
+scores = []
+for i, (name, fn, weight, checks) in enumerate(STEPS, 1):
+    print()
+    print(f"     ▸ Step {i}/4 — {name}   (weight {int(weight*100)}%)")
+    print(f"       checks: {checks}")
+    t0 = time.perf_counter()
+    score = fn(result, scenario)
+    dt_ms = (time.perf_counter() - t0) * 1000
+    contribution = score * weight
+    bar_len = int(round(score * 30))
+    bar = "█" * bar_len + "░" * (30 - bar_len)
+    print(f"       score : {bar}  {score:.3f}    "
+          f"contribution = {score:.3f} × {weight:.2f} = {contribution:.3f}    "
+          f"({dt_ms:.1f} ms)")
+    scores.append((name, score, weight, contribution))
+
+# ── Combine ──
+print()
+print(f"     {'─' * 64}")
+formula_terms = "  +  ".join(f"{s:.3f}·{w:.2f}" for _, s, w, _ in scores)
+contrib_terms = "  +  ".join(f"{c:.3f}"        for _, _, _, c in scores)
+combined = sum(c for *_ , c in scores)
+verdict  = "✅  PASS" if combined >= 0.70 else "❌  FAIL"
+print(f"     COMBINED  =  {formula_terms}")
+print(f"               =  {contrib_terms}")
+print(f"               =  {combined:.3f}     {verdict}   (bar = 0.70)")
 """))
 
 # =====================================================================
