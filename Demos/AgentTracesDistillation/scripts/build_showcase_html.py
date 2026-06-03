@@ -260,9 +260,9 @@ body {
   margin: 4px 0 12px 0;
   padding: 9px 14px 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: #fff;
+  background: var(--good-soft);
   border: 1px solid var(--rule);
-  border-left: 3px solid var(--ink-mute);
+  border-left: 3px solid var(--good);
   border-radius: 5px;
   font-size: 0.82rem;
   opacity: 0;
@@ -270,9 +270,6 @@ body {
   transition: opacity 240ms ease, transform 240ms ease;
 }
 .toolcall.show { opacity: 1; transform: translateX(0); }
-.toolcall.expected  { border-left-color: var(--good); }
-.toolcall.forbidden { border-left-color: var(--bad);  background: var(--bad-soft); }
-.toolcall.extra     { border-left-color: var(--warn); background: #fffbf2; }
 .toolcall .head {
   display: flex; align-items: center; gap: 8px;
   margin-bottom: 5px;
@@ -284,13 +281,10 @@ body {
   text-transform: uppercase;
   padding: 1px 7px;
   border-radius: 3px;
-  background: rgba(0,0,0,0.05);
-  color: var(--ink-mute);
+  color: var(--good);
+  background: rgba(78,122,77,0.14);
   font-weight: 600;
 }
-.toolcall.expected  .glyph { color: var(--good); background: rgba(78,122,77,0.14); }
-.toolcall.forbidden .glyph { color: var(--bad);  background: rgba(168,59,44,0.14); }
-.toolcall.extra     .glyph { color: var(--warn); background: rgba(161,98,7,0.14); }
 .toolcall .name {
   color: var(--ink);
   font-weight: 600;
@@ -508,12 +502,11 @@ JS = r"""
       scriptEl.scrollTop = scriptEl.scrollHeight;
     }
 
-    function addToolCall(name, kind, args) {
+    function addToolCall(name, args) {
       removeTyping();
       const tc = document.createElement('div');
-      tc.className = 'toolcall ' + kind;
+      tc.className = 'toolcall';
       const keys = Object.keys(args || {});
-      const glyphMap = { expected: 'tool · expected', forbidden: 'tool · forbidden', extra: 'tool · extra' };
       let argsHtml;
       if (keys.length === 0) {
         argsHtml = '<div class="args"><span class="empty">(no arguments)</span></div>';
@@ -525,7 +518,7 @@ JS = r"""
       }
       tc.innerHTML =
         '<div class="head">' +
-          '<span class="glyph">' + glyphMap[kind] + '</span>' +
+          '<span class="glyph">Tool</span>' +
           '<span class="name">' + escapeHtml(name) + '</span>' +
         '</div>' +
         argsHtml;
@@ -551,7 +544,7 @@ JS = r"""
           t += 220;
         } else if (ev.type === 'tool') {
           t += TOOL_GAP_MS;
-          timers.push(setTimeout(() => addToolCall(ev.name, ev.kind, ev.args), t));
+          timers.push(setTimeout(() => addToolCall(ev.name, ev.args), t));
         }
       });
       timers.push(setTimeout(() => {
