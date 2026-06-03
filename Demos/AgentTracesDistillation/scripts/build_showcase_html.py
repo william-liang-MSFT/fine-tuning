@@ -1,8 +1,9 @@
 """Full-page, minimalistic, elegant demo replay.
 
-One demo per viewport. Soft palette, generous whitespace, refined typography.
-Each demo has Before (left) and After (right) panels with their own circular
-play button. Navigate demos via top dots, arrow keys, or scroll.
+One demo per viewport. Editorial typography, lots of whitespace.
+Each demo has Before (left) and After (right) panels with their own
+circular play button, a 1-line verdict callout, and inline tool blocks
+that surface argument values (the key signal when an arg was wrong).
 """
 from __future__ import annotations
 
@@ -20,7 +21,22 @@ HEADLINES = [
     "Restocking-fee math",
     "Multi-item cart cancel",
     "Sale item, no defect — should deny",
-    "Out-of-scope: place a new order",
+    "Out-of-scope request",
+]
+
+
+WRONG_NOTES = [
+    "Skipped or mis-tiered the 15% restocking fee, so the refund total was wrong.",
+    "Forced one action across the cart and skipped per-item policy + calc.",
+    "Over-called tools and applied the wrong refund base on a final-sale item.",
+    "Tried to help anyway — even called a tool that doesn't apply.",
+]
+
+IMPROVED_NOTES = [
+    "Calls policy → calc in order and applies the correct 15% restocking fee.",
+    "Resolves each line independently: cancel, exchange, refund where appropriate.",
+    "Checks defect status first, then applies the final-sale rule cleanly.",
+    "Polite refusal and redirect. Zero tool calls.",
 ]
 
 
@@ -50,7 +66,6 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-weight: 400;
-  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
@@ -76,9 +91,7 @@ body {
   color: var(--ink-mute);
   font-weight: 500;
 }
-.dots {
-  display: flex; gap: 14px;
-}
+.dots { display: flex; gap: 14px; }
 .dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -98,7 +111,7 @@ body {
   text-align: right;
 }
 
-/* ── deck (snap container) ─────────────────────────────── */
+/* ── deck ──────────────────────────────────────────────── */
 .deck {
   height: 100vh;
   overflow-y: scroll;
@@ -107,29 +120,28 @@ body {
 }
 .deck::-webkit-scrollbar { display: none; }
 
-/* ── slide ─────────────────────────────────────────────── */
 .slide {
   height: 100vh;
-  min-height: 720px;
+  min-height: 740px;
   scroll-snap-align: start;
-  padding: 80px 56px 32px;
+  padding: 76px 56px 28px;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  gap: 26px;
+  gap: 22px;
 }
 
 .intro { text-align: center; max-width: 980px; margin: 0 auto; }
 .intro .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--ink-mute);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .intro h1 {
   font-family: "Cormorant Garamond", "EB Garamond", Georgia, "Times New Roman", serif;
   font-weight: 500;
-  font-size: 2.6rem;
+  font-size: 2.4rem;
   line-height: 1.15;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -139,12 +151,11 @@ body {
   text-align: center;
   max-width: 760px;
   margin: 0 auto;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   line-height: 1.55;
   color: var(--ink-soft);
   font-style: italic;
   padding: 0 24px;
-  position: relative;
 }
 .opener::before, .opener::after {
   font-family: Georgia, serif;
@@ -161,7 +172,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   gap: 0;
-  max-width: 1480px;
+  max-width: 1520px;
   width: 100%;
   margin: 0 auto;
   min-height: 0;
@@ -177,13 +188,11 @@ body {
 
 .side-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding-bottom: 14px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--rule);
   margin-bottom: 14px;
 }
-.side-label {
-  display: flex; align-items: baseline; gap: 12px;
-}
+.side-label { display: flex; align-items: baseline; gap: 12px; }
 .side-label .kicker {
   font-size: 0.7rem;
   letter-spacing: 0.26em;
@@ -197,7 +206,6 @@ body {
   font-size: 0.78rem;
   color: var(--ink-mute);
 }
-
 .actions { display: flex; align-items: center; gap: 8px; }
 .iconbtn {
   width: 36px; height: 36px;
@@ -211,48 +219,37 @@ body {
   transition: all 180ms ease;
 }
 .iconbtn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-.iconbtn.play {
-  width: 42px; height: 42px;
-  font-size: 0.95rem;
-}
+.iconbtn.play { width: 42px; height: 42px; font-size: 0.95rem; }
 .side.before .iconbtn.play { background: var(--before); border-color: var(--before); color: #fff; }
 .side.before .iconbtn.play:hover { background: #8a3a2f; border-color: #8a3a2f; }
 .side.after  .iconbtn.play { background: var(--after);  border-color: var(--after);  color: #fff; }
 .side.after  .iconbtn.play:hover { background: #21498a; border-color: #21498a; }
 
-.chips {
-  min-height: 30px;
-  display: flex; flex-wrap: wrap; gap: 6px;
+/* ── verdict callout ───────────────────────────────────── */
+.callout {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
   margin-bottom: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  border-left: 3px solid;
 }
-.chip {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.74rem;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid var(--rule);
-  color: var(--ink-soft);
-  opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 240ms ease, transform 240ms ease;
+.callout .label {
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  flex-shrink: 0;
+  padding-top: 1px;
 }
-.chip.show { opacity: 1; transform: translateY(0); }
-.chip.expected  { color: var(--good); border-color: var(--good); background: var(--good-soft); }
-.chip.forbidden { color: var(--bad);  border-color: var(--bad);  background: var(--bad-soft); font-weight: 600; }
-.chip.extra     { color: var(--warn); border-color: var(--warn); background: var(--warn-soft); }
-.chips .ghost {
-  font-style: italic;
-  font-size: 0.78rem;
-  color: var(--ink-mute);
-  font-family: inherit;
-  border: none;
-  background: transparent;
-  padding: 3px 0;
-  opacity: 1;
-  transform: none;
-}
+.callout .text { color: var(--ink); }
+.side.before .callout { background: var(--bad-soft);  border-left-color: var(--bad);  }
+.side.before .callout .label { color: var(--bad); }
+.side.after  .callout { background: var(--good-soft); border-left-color: var(--good); }
+.side.after  .callout .label { color: var(--good); }
 
+/* ── transcript flow ───────────────────────────────────── */
 .script {
   overflow-y: auto;
   padding-right: 6px;
@@ -263,7 +260,7 @@ body {
 
 .turn {
   margin-bottom: 12px;
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   line-height: 1.55;
   opacity: 0;
   transform: translateY(6px);
@@ -288,18 +285,78 @@ body {
   border-left: 2px solid var(--ink-mute);
   max-width: 95%;
 }
-.turn.customer .body { background: var(--customer); border-left-color: var(--ink-mute); }
 .side.before .turn.agent .body { background: var(--before-soft); border-left-color: var(--before); }
 .side.after  .turn.agent .body { background: var(--after-soft);  border-left-color: var(--after); }
 
+/* inline tool call block (the key visual: name + arg values) */
+.toolcall {
+  margin: 4px 0 12px 0;
+  padding: 9px 14px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--ink-mute);
+  border-radius: 5px;
+  font-size: 0.82rem;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+.toolcall.show { opacity: 1; transform: translateX(0); }
+.toolcall.expected  { border-left-color: var(--good); }
+.toolcall.forbidden { border-left-color: var(--bad);  background: var(--bad-soft); }
+.toolcall.extra     { border-left-color: var(--warn); background: #fffbf2; }
+.toolcall .head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 5px;
+}
+.toolcall .glyph {
+  font-family: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1px 7px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.05);
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.toolcall.expected  .glyph { color: var(--good); background: rgba(78,122,77,0.14); }
+.toolcall.forbidden .glyph { color: var(--bad);  background: rgba(168,59,44,0.14); }
+.toolcall.extra     .glyph { color: var(--warn); background: rgba(161,98,7,0.14); }
+.toolcall .name {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+.toolcall .args {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 14px;
+  row-gap: 3px;
+  padding-left: 2px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.toolcall .args .k { color: var(--ink-mute); }
+.toolcall .args .v { color: var(--ink); word-break: break-word; white-space: pre-wrap; }
+.toolcall.no-args .args { display: none; }
+.toolcall .empty {
+  font-style: italic;
+  color: var(--ink-mute);
+  font-size: 0.76rem;
+  font-family: "Inter", sans-serif;
+}
+
+/* typing indicator */
 .typing {
-  display: inline-flex; align-items: center; gap: 5px;
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 12px;
   background: #fff;
   border: 1px solid var(--rule);
   border-radius: 14px;
   margin-bottom: 12px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-mute);
@@ -310,11 +367,11 @@ body {
   border-radius: 50%;
   animation: blink 1.2s infinite ease-in-out;
 }
-.typing .dot:nth-child(2) { animation-delay: 0.18s; }
-.typing .dot:nth-child(3) { animation-delay: 0.36s; }
+.typing .dot:nth-child(3) { animation-delay: 0.18s; }
+.typing .dot:nth-child(4) { animation-delay: 0.36s; }
 @keyframes blink { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
 
-/* ── arrow nav ─────────────────────────────────────────── */
+/* arrow nav */
 .arrows {
   position: fixed;
   bottom: 24px; right: 32px;
@@ -323,24 +380,12 @@ body {
 }
 .arrows .iconbtn { background: #fff; }
 
-/* hint */
-.hint {
-  position: fixed;
-  bottom: 30px; left: 50%; transform: translateX(-50%);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  z-index: 40;
-  pointer-events: none;
-}
-
 @media (max-width: 980px) {
   .compare { grid-template-columns: 1fr; }
   .divider { display: none; }
   .side { padding: 0 8px; margin-bottom: 24px; }
-  .slide { padding: 76px 20px 24px; }
-  .intro h1 { font-size: 2rem; }
+  .slide { padding: 76px 20px 24px; height: auto; }
+  .intro h1 { font-size: 1.9rem; }
 }
 """
 
@@ -362,6 +407,12 @@ def _build_timeline(side: dict, expected: set, forbidden: set) -> list:
     events = []
     cursor = 0
     agent_seen = 0
+
+    def _tool_event(tc):
+        name = tc.get("name", "")
+        kind = "expected" if name in expected else ("forbidden" if name in forbidden else "extra")
+        return {"type": "tool", "name": name, "kind": kind, "args": tc.get("arguments") or {}}
+
     for t in transcript:
         role = t.get("role", "")
         if role == "customer":
@@ -369,21 +420,17 @@ def _build_timeline(side: dict, expected: set, forbidden: set) -> list:
         else:
             take = per_agent[agent_seen] if agent_seen < len(per_agent) else 0
             for tc in tool_calls[cursor:cursor + take]:
-                name = tc.get("name", "")
-                kind = "expected" if name in expected else ("forbidden" if name in forbidden else "extra")
-                events.append({"type": "tool", "name": name, "kind": kind})
+                events.append(_tool_event(tc))
             cursor += take
             agent_seen += 1
             events.append({"type": "turn", "role": "agent", "body": t.get("content") or ""})
     for tc in tool_calls[cursor:]:
-        name = tc.get("name", "")
-        kind = "expected" if name in expected else ("forbidden" if name in forbidden else "extra")
-        events.append({"type": "tool", "name": name, "kind": kind})
+        events.append(_tool_event(tc))
     return events
 
 
-def _render_side(label: str, model: str, kind: str, events: list) -> str:
-    blob = json.dumps({"events": events}).replace("</", "<\\/")
+def _render_side(label: str, model: str, kind: str, callout_label: str, callout_text: str, events: list) -> str:
+    blob = json.dumps({"events": events}, ensure_ascii=False).replace("</", "<\\/")
     return f"""
     <div class="side {kind}" data-side="{kind}">
       <div class="side-head">
@@ -396,7 +443,10 @@ def _render_side(label: str, model: str, kind: str, events: list) -> str:
           <button class="iconbtn play" data-action="play" title="Play">▶</button>
         </div>
       </div>
-      <div class="chips" data-chips><span class="chip ghost">tools appear as the agent calls them</span></div>
+      <div class="callout">
+        <span class="label">{_esc(callout_label)}</span>
+        <span class="text">{_esc(callout_text)}</span>
+      </div>
       <div class="script" data-script></div>
       <script type="application/json" class="events-data">{blob}</script>
     </div>
@@ -410,6 +460,8 @@ def _render_slide(demo: dict, idx: int, total: int, models: dict) -> str:
     s_events = _build_timeline(demo.get("student", {}), expected, forbidden)
     f_events = _build_timeline(demo.get("ft", {}), expected, forbidden)
     headline = HEADLINES[idx - 1] if idx - 1 < len(HEADLINES) else demo.get("headline", "")
+    wrong = WRONG_NOTES[idx - 1] if idx - 1 < len(WRONG_NOTES) else ""
+    improved = IMPROVED_NOTES[idx - 1] if idx - 1 < len(IMPROVED_NOTES) else ""
     return f"""
 <section class="slide" id="slide-{idx}" data-slide="{idx}">
   <div class="intro">
@@ -418,9 +470,9 @@ def _render_slide(demo: dict, idx: int, total: int, models: dict) -> str:
   </div>
   <div class="opener">{_esc(sc.get('user_message', ''))}</div>
   <div class="compare">
-    {_render_side("Before", models['student_model'], "before", s_events)}
+    {_render_side("Before", models['student_model'], "before", "What went wrong", wrong, s_events)}
     <div class="divider"></div>
-    {_render_side("After", models['ft_model'], "after", f_events)}
+    {_render_side("After", models['ft_model'], "after", "What improved", improved, f_events)}
   </div>
 </section>
 """
@@ -430,12 +482,19 @@ JS = r"""
 (function () {
   const CUSTOMER_THINK_MS = 800;
   const AGENT_THINK_MS    = 1400;
-  const TOOL_GAP_MS       = 350;
+  const TOOL_GAP_MS       = 450;
 
   function escapeHtml(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function fmtVal(v) {
+    if (v === null || v === undefined) return 'null';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    try { return JSON.stringify(v); } catch (e) { return String(v); }
   }
 
   function setupSide(sideEl) {
@@ -444,14 +503,12 @@ JS = r"""
     try { events = JSON.parse(dataNode.textContent).events; }
     catch (e) { console.error('events parse failed', e); return; }
 
-    const chipsEl  = sideEl.querySelector('[data-chips]');
     const scriptEl = sideEl.querySelector('[data-script]');
     const playBtn  = sideEl.querySelector('[data-action="play"]');
     const resetBtn = sideEl.querySelector('[data-action="reset"]');
 
     let timers = [];
     let typingEl = null;
-    let placeholderRemoved = false;
     let playing = false;
 
     function clearAll() { timers.forEach(t => clearTimeout(t)); timers = []; }
@@ -459,8 +516,6 @@ JS = r"""
     function reset() {
       clearAll();
       scriptEl.innerHTML = '';
-      chipsEl.innerHTML = '<span class="chip ghost">tools appear as the agent calls them</span>';
-      placeholderRemoved = false;
       typingEl = null;
       playing = false;
       playBtn.innerHTML = '▶';
@@ -470,7 +525,7 @@ JS = r"""
       removeTyping();
       const el = document.createElement('div');
       el.className = 'typing';
-      el.innerHTML = '<span>' + who + '</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      el.innerHTML = '<span>' + escapeHtml(who) + '</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>';
       scriptEl.appendChild(el);
       scriptEl.scrollTop = scriptEl.scrollHeight;
       typingEl = el;
@@ -488,17 +543,30 @@ JS = r"""
       scriptEl.scrollTop = scriptEl.scrollHeight;
     }
 
-    function addChip(name, kind) {
-      if (!placeholderRemoved) {
-        const ph = chipsEl.querySelector('.ghost');
-        if (ph) ph.remove();
-        placeholderRemoved = true;
+    function addToolCall(name, kind, args) {
+      removeTyping();
+      const tc = document.createElement('div');
+      tc.className = 'toolcall ' + kind;
+      const keys = Object.keys(args || {});
+      const glyphMap = { expected: 'tool · expected', forbidden: 'tool · forbidden', extra: 'tool · extra' };
+      let argsHtml;
+      if (keys.length === 0) {
+        argsHtml = '<div class="args"><span class="empty">(no arguments)</span></div>';
+        tc.classList.add('no-args');
+      } else {
+        argsHtml = '<div class="args">' + keys.map(k =>
+          '<span class="k">' + escapeHtml(k) + '</span><span class="v">' + escapeHtml(fmtVal(args[k])) + '</span>'
+        ).join('') + '</div>';
       }
-      const c = document.createElement('span');
-      c.className = 'chip ' + kind;
-      c.textContent = name;
-      chipsEl.appendChild(c);
-      requestAnimationFrame(() => c.classList.add('show'));
+      tc.innerHTML =
+        '<div class="head">' +
+          '<span class="glyph">' + glyphMap[kind] + '</span>' +
+          '<span class="name">' + escapeHtml(name) + '</span>' +
+        '</div>' +
+        argsHtml;
+      scriptEl.appendChild(tc);
+      requestAnimationFrame(() => tc.classList.add('show'));
+      scriptEl.scrollTop = scriptEl.scrollHeight;
     }
 
     function play() {
@@ -515,10 +583,10 @@ JS = r"""
           timers.push(setTimeout(() => showTyping(who), t));
           t += thinkMs;
           timers.push(setTimeout(() => addTurn(ev.role, ev.body), t));
-          t += 200;
+          t += 220;
         } else if (ev.type === 'tool') {
           t += TOOL_GAP_MS;
-          timers.push(setTimeout(() => addChip(ev.name, ev.kind), t));
+          timers.push(setTimeout(() => addToolCall(ev.name, ev.kind, ev.args), t));
         }
       });
       timers.push(setTimeout(() => {
@@ -543,7 +611,6 @@ JS = r"""
       i = Math.max(0, Math.min(total - 1, i));
       slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
     dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
 
     const io = new IntersectionObserver(entries => {
@@ -551,9 +618,7 @@ JS = r"""
         if (en.isIntersecting && en.intersectionRatio > 0.55) {
           const idx = parseInt(en.target.dataset.slide, 10) - 1;
           dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-          if (counter) {
-            counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
-          }
+          if (counter) counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
         }
       });
     }, { root: deck, threshold: [0.55] });
