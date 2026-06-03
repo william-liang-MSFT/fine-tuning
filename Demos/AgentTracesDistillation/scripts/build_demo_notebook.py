@@ -491,10 +491,11 @@ banner("CACHED EVAL RUNS",
        "3 roles × 3 passes × 2 sets  =  18 cells on disk, all scored")
 print(f"   {'set':<12} {'role':<10} {'pass^1':>10} {'pass^2':>10} {'pass^3':>10}")
 print(f"   {'─' * 56}")
+_SET_LABEL = {"train": "train", "validation": "hold-out"}
 for set_name in ("train", "validation"):
     for role in ("student", "teacher", "ft"):
         ns = [len(r["per_scenario"]) for r in load_runs(set_name, role)]
-        print(f"   {set_name:<12} {role:<10} {ns[0]:>10} {ns[1]:>10} {ns[2]:>10}")
+        print(f"   {_SET_LABEL[set_name]:<12} {role:<10} {ns[0]:>10} {ns[1]:>10} {ns[2]:>10}")
 """))
 
 # =====================================================================
