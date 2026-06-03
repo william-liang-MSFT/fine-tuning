@@ -306,6 +306,7 @@ from evaluate_v2 import (  # noqa: E402
     score_decision_correctness, score_tool_usage,
     score_financial_accuracy, score_communication,
     _extract_actions_v2, _normalize_tool_calls,
+    _has_shipping_credit_for,
 )
 
 # ── Load cached teacher run for the SAME scenario (H059) ──
@@ -352,25 +353,39 @@ _step_header(1, 4, "Decision correctness", 0.35,
              "right action + reason per line item, no over-resolution")
 expected_actions = scenario.get("expected_actions", {})
 actual_actions   = _extract_actions_v2(_normalize_tool_calls(tool_calls))
+norm_tcs         = _normalize_tool_calls(tool_calls)
 print()
 print("  ▸ Expected per-item actions:")
 for k, exp in expected_actions.items():
     print(f"      • {k:<22}  action={exp.get('action'):<18} reason={exp.get('reason')}")
 print()
 print("  ▸ Actual per-item actions (extracted from tool calls):")
-if actual_actions:
-    for k, act in actual_actions.items():
-        exp_a = (expected_actions.get(k) or {}).get("action")
-        exp_r = (expected_actions.get(k) or {}).get("reason")
-        mark_a = "✅ match" if exp_a == act.get("action") else "⚠️  differs"
-        mark_r = "✅ match" if (exp_r is None or exp_r == act.get("reason")) else "⚠️  differs"
-        print(f"      • {k:<22}  action={act.get('action'):<18} reason={act.get('reason')}")
-        print(f"        {' '*22}  {mark_a:<18}        {mark_r}")
-    missing = [k for k in expected_actions if k not in actual_actions]
-    for k in missing:
+for k, exp in expected_actions.items():
+    exp_a = exp.get("action")
+    exp_r = exp.get("reason")
+    # Shipping-credit pseudo-keys are stored under a synthetic id but the
+    # actual call carries item_id = real_iid; the scorer dereferences via
+    # _has_shipping_credit_for, so mirror that here.
+    if k.startswith("shipping_credit"):
+        real_iid = exp.get("item_id")
+        if real_iid and _has_shipping_credit_for(norm_tcs, real_iid):
+            print(f"      • {k:<22}  ✅ shipping_credit found for item {real_iid}")
+        else:
+            print(f"      • {k:<22}  ❌ no shipping_credit call for item {real_iid}")
+        continue
+    act = actual_actions.get(k)
+    if not act:
         print(f"      • {k:<22}  ❌ MISSING from tool calls")
-else:
-    print("      (none extracted)")
+        continue
+    mark_a = "✅ match" if exp_a == act.get("action") else "⚠️  differs"
+    mark_r = "✅ match" if (exp_r is None or exp_r == act.get("reason")) else "⚠️  differs"
+    print(f"      • {k:<22}  action={act.get('action'):<18} reason={act.get('reason')}")
+    print(f"        {' '*22}  {mark_a:<18}        {mark_r}")
+# Surface anything the agent resolved that wasn't expected (over-resolution).
+extra = [k for k in actual_actions if k not in expected_actions]
+for k in extra:
+    a = actual_actions[k]
+    print(f"      • {k:<22}  ⚠️  unexpected: action={a.get('action')} reason={a.get('reason')}")
 sc1 = score_decision_correctness(result, scenario)
 _step_score(sc1, 0.35)
 contributions.append(("decision", sc1, 0.35))
