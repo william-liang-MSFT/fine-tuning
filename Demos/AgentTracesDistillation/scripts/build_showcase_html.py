@@ -1,12 +1,8 @@
-"""Minimal animated side-by-side demo showcase.
+"""Full-page, minimalistic, elegant demo replay.
 
-Reads results/eval_result/demo_transcripts.json and writes a clean
-demo_showcase.html where:
-- Left card  = BEFORE (student).
-- Right card = AFTER  (fine-tuned).
-- Each card has its OWN play / reset button so they animate independently.
-- Each message arrives with a small "think" delay so the conversation feels
-  natural to watch.
+One demo per viewport. Soft palette, generous whitespace, refined typography.
+Each demo has Before (left) and After (right) panels with their own circular
+play button. Navigate demos via top dots, arrow keys, or scroll.
 """
 from __future__ import annotations
 
@@ -28,204 +24,323 @@ HEADLINES = [
 ]
 
 
-CSS = """
+CSS = r"""
 :root {
-  --bg: #f6f8fb;
-  --card: #ffffff;
-  --border: #e1e5ec;
-  --text: #111827;
-  --muted: #6b7280;
-  --student: #c0392b;
-  --student-soft: #fdecea;
-  --ft: #1f6feb;
-  --ft-soft: #e7f0fd;
-  --customer: #eef1f5;
-  --good: #1f8b4c;
-  --good-soft: #e7f5ec;
-  --warn: #b45309;
-  --warn-soft: #fdf2dc;
-  --bad: #c0392b;
-  --bad-soft: #fbe9e7;
+  --bg: #fafaf7;
+  --ink: #1a1a1a;
+  --ink-soft: #555;
+  --ink-mute: #9a9a93;
+  --rule: #e6e3da;
+  --customer: #f1efe9;
+  --before: #b14a3c;
+  --before-soft: #f7eae6;
+  --after: #2c5ea8;
+  --after-soft: #e8eff8;
+  --good: #4e7a4d;
+  --good-soft: #ecf2eb;
+  --warn: #a16207;
+  --warn-soft: #f8efdc;
+  --bad: #a83b2c;
+  --bad-soft: #f5e3df;
 }
-* { box-sizing: border-box; }
-html { font-size: 17px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
-  margin: 0;
-  padding: 0 0 60px 0;
+  color: var(--ink);
+  font-weight: 400;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
 }
 
-header.page {
-  padding: 28px 40px 18px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
+/* ── top bar ───────────────────────────────────────────── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  z-index: 50;
+  background: rgba(250, 250, 247, 0.85);
+  backdrop-filter: saturate(150%) blur(8px);
+  -webkit-backdrop-filter: saturate(150%) blur(8px);
+  border-bottom: 1px solid var(--rule);
 }
-header.page h1 {
-  margin: 0;
-  font-size: 1.7rem;
-  font-weight: 700;
+.brand {
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 500;
+}
+.dots {
+  display: flex; gap: 14px;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--ink-mute);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.dot:hover { border-color: var(--ink); }
+.dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.15); }
+.counter {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* ── deck (snap container) ─────────────────────────────── */
+.deck {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.deck::-webkit-scrollbar { display: none; }
+
+/* ── slide ─────────────────────────────────────────────── */
+.slide {
+  height: 100vh;
+  min-height: 720px;
+  scroll-snap-align: start;
+  padding: 80px 56px 32px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 26px;
+}
+
+.intro { text-align: center; max-width: 980px; margin: 0 auto; }
+.intro .eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+}
+.intro h1 {
+  font-family: "Cormorant Garamond", "EB Garamond", Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  font-size: 2.6rem;
+  line-height: 1.15;
   letter-spacing: -0.01em;
-}
-header.page .sub {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 0.95rem;
+  color: var(--ink);
 }
 
-main { max-width: 1340px; margin: 0 auto; padding: 28px 32px 0; }
-
-.demo {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px 26px 24px;
-  margin-bottom: 28px;
-}
-.demo h2 {
-  margin: 0 0 6px 0;
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-.demo .opener {
-  color: var(--muted);
-  font-size: 0.98rem;
-  margin-bottom: 18px;
+.opener {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
   font-style: italic;
+  padding: 0 24px;
+  position: relative;
 }
-.demo .opener::before { content: '👤  '; font-style: normal; }
+.opener::before, .opener::after {
+  font-family: Georgia, serif;
+  color: var(--ink-mute);
+  font-size: 1.6rem;
+  line-height: 0;
+  vertical-align: -0.3em;
+}
+.opener::before { content: '“ '; }
+.opener::after  { content: ' ”'; }
 
+/* ── compare grid ──────────────────────────────────────── */
 .compare {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0;
+  max-width: 1480px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 0;
 }
-@media (max-width: 1000px) { .compare { grid-template-columns: 1fr; } }
+.divider { background: var(--rule); }
 
 .side {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  display: flex; flex-direction: column;
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  min-height: 0;
+  padding: 0 36px;
 }
 
 .side-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 14px;
 }
-.side.student .side-head { background: var(--student-soft); }
-.side.ft      .side-head { background: var(--ft-soft); }
-
-.side-title { font-weight: 700; font-size: 0.95rem; letter-spacing: 0.01em; }
-.side.student .side-title { color: var(--student); }
-.side.ft      .side-title { color: var(--ft); }
-.side-title .tag {
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
+.side-label {
+  display: flex; align-items: baseline; gap: 12px;
+}
+.side-label .kicker {
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-}
-
-.side-actions { display: flex; gap: 6px; }
-.btn {
-  border: 1px solid var(--border);
-  background: #fff;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
 }
-.btn:hover { background: #f3f5f8; }
-.btn.play { color: #fff; }
-.side.student .btn.play { background: var(--student); border-color: var(--student); }
-.side.student .btn.play:hover { background: #a33122; }
-.side.ft      .btn.play { background: var(--ft); border-color: var(--ft); }
-.side.ft      .btn.play:hover { background: #155bc4; }
-
-.chips {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  min-height: 38px;
-  display: flex; flex-wrap: wrap; gap: 5px;
-  background: #fcfdff;
-}
-.chip {
-  display: inline-flex; align-items: center;
-  padding: 3px 9px;
-  border-radius: 999px;
+.side.before .kicker { color: var(--before); }
+.side.after  .kicker { color: var(--after); }
+.side-label .model {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.78rem;
+  color: var(--ink-mute);
+}
+
+.actions { display: flex; align-items: center; gap: 8px; }
+.iconbtn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
   background: #fff;
-  border: 1px solid var(--border);
-  color: var(--text);
+  color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 180ms ease;
+}
+.iconbtn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.iconbtn.play {
+  width: 42px; height: 42px;
+  font-size: 0.95rem;
+}
+.side.before .iconbtn.play { background: var(--before); border-color: var(--before); color: #fff; }
+.side.before .iconbtn.play:hover { background: #8a3a2f; border-color: #8a3a2f; }
+.side.after  .iconbtn.play { background: var(--after);  border-color: var(--after);  color: #fff; }
+.side.after  .iconbtn.play:hover { background: #21498a; border-color: #21498a; }
+
+.chips {
+  min-height: 30px;
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 14px;
+}
+.chip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
   opacity: 0;
-  transform: translateY(-3px);
-  transition: opacity 220ms ease, transform 220ms ease;
+  transform: translateY(-2px);
+  transition: opacity 240ms ease, transform 240ms ease;
 }
 .chip.show { opacity: 1; transform: translateY(0); }
-.chip.expected { border-color: var(--good); color: var(--good); background: var(--good-soft); }
-.chip.forbidden { border-color: var(--bad);  color: var(--bad);  background: var(--bad-soft); font-weight: 700; }
-.chip.extra    { border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }
-.chips .placeholder { color: #b1b6bf; font-style: italic; font-size: 0.85rem; }
+.chip.expected  { color: var(--good); border-color: var(--good); background: var(--good-soft); }
+.chip.forbidden { color: var(--bad);  border-color: var(--bad);  background: var(--bad-soft); font-weight: 600; }
+.chip.extra     { color: var(--warn); border-color: var(--warn); background: var(--warn-soft); }
+.chips .ghost {
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  padding: 3px 0;
+  opacity: 1;
+  transform: none;
+}
 
 .script {
-  padding: 12px 14px;
-  flex: 1;
-  min-height: 240px;
-  max-height: 520px;
   overflow-y: auto;
+  padding-right: 6px;
+  min-height: 0;
 }
+.script::-webkit-scrollbar { width: 6px; }
+.script::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
 
 .turn {
-  margin-bottom: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  margin-bottom: 12px;
   font-size: 0.95rem;
+  line-height: 1.55;
   opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 220ms ease, transform 220ms ease;
+  transform: translateY(6px);
+  transition: opacity 260ms ease, transform 260ms ease;
 }
 .turn.show { opacity: 1; transform: translateY(0); }
-.turn.customer { background: var(--customer); border-left: 3px solid #9ca3af; }
-.side.student .turn.agent { background: var(--student-soft); border-left: 3px solid var(--student); }
-.side.ft      .turn.agent { background: var(--ft-soft);      border-left: 3px solid var(--ft); }
-.turn .who { font-weight: 700; font-size: 0.78rem; margin-bottom: 2px; color: var(--muted); }
-.turn .body { white-space: pre-wrap; word-wrap: break-word; }
+.turn .who {
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-mute);
+  margin-bottom: 4px;
+}
+.turn .body {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--ink);
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--customer);
+  border-left: 2px solid var(--ink-mute);
+  max-width: 95%;
+}
+.turn.customer .body { background: var(--customer); border-left-color: var(--ink-mute); }
+.side.before .turn.agent .body { background: var(--before-soft); border-left-color: var(--before); }
+.side.after  .turn.agent .body { background: var(--after-soft);  border-left-color: var(--after); }
 
 .typing {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 6px 12px;
-  background: #f3f5f8;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 12px;
+  background: #fff;
+  border: 1px solid var(--rule);
   border-radius: 14px;
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
 }
 .typing .dot {
-  width: 6px; height: 6px; background: #9ca3af; border-radius: 50%;
-  animation: blink 1.1s infinite ease-in-out;
+  width: 5px; height: 5px;
+  background: var(--ink-mute);
+  border-radius: 50%;
+  animation: blink 1.2s infinite ease-in-out;
 }
 .typing .dot:nth-child(2) { animation-delay: 0.18s; }
 .typing .dot:nth-child(3) { animation-delay: 0.36s; }
-@keyframes blink {
-  0%, 60%, 100% { opacity: 0.3; }
-  30% { opacity: 1; }
+@keyframes blink { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+
+/* ── arrow nav ─────────────────────────────────────────── */
+.arrows {
+  position: fixed;
+  bottom: 24px; right: 32px;
+  display: flex; gap: 8px;
+  z-index: 50;
+}
+.arrows .iconbtn { background: #fff; }
+
+/* hint */
+.hint {
+  position: fixed;
+  bottom: 30px; left: 50%; transform: translateX(-50%);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  z-index: 40;
+  pointer-events: none;
 }
 
-footer {
-  text-align: center;
-  margin-top: 50px;
-  color: var(--muted);
-  font-size: 0.82rem;
+@media (max-width: 980px) {
+  .compare { grid-template-columns: 1fr; }
+  .divider { display: none; }
+  .side { padding: 0 8px; margin-bottom: 24px; }
+  .slide { padding: 76px 20px 24px; }
+  .intro h1 { font-size: 2rem; }
 }
 """
 
@@ -270,22 +385,25 @@ def _build_timeline(side: dict, expected: set, forbidden: set) -> list:
 def _render_side(label: str, model: str, kind: str, events: list) -> str:
     blob = json.dumps({"events": events}).replace("</", "<\\/")
     return f"""
-<div class="side {kind}" data-side="{kind}">
-  <div class="side-head">
-    <div class="side-title">{_esc(label)}<span class="tag">{_esc(model)}</span></div>
-    <div class="side-actions">
-      <button class="btn play" data-action="play">▶ Play</button>
-      <button class="btn" data-action="reset">↻</button>
+    <div class="side {kind}" data-side="{kind}">
+      <div class="side-head">
+        <div class="side-label">
+          <span class="kicker">{_esc(label)}</span>
+          <span class="model">{_esc(model)}</span>
+        </div>
+        <div class="actions">
+          <button class="iconbtn" data-action="reset" title="Reset">↻</button>
+          <button class="iconbtn play" data-action="play" title="Play">▶</button>
+        </div>
+      </div>
+      <div class="chips" data-chips><span class="chip ghost">tools appear as the agent calls them</span></div>
+      <div class="script" data-script></div>
+      <script type="application/json" class="events-data">{blob}</script>
     </div>
-  </div>
-  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
-  <div class="script" data-script></div>
-  <script type="application/json" class="events-data">{blob}</script>
-</div>
 """
 
 
-def _render_demo(demo: dict, idx: int, models: dict) -> str:
+def _render_slide(demo: dict, idx: int, total: int, models: dict) -> str:
     sc = demo.get("scenario", {})
     expected = set(sc.get("expected_tools") or [])
     forbidden = set(sc.get("forbidden_tools") or [])
@@ -293,12 +411,16 @@ def _render_demo(demo: dict, idx: int, models: dict) -> str:
     f_events = _build_timeline(demo.get("ft", {}), expected, forbidden)
     headline = HEADLINES[idx - 1] if idx - 1 < len(HEADLINES) else demo.get("headline", "")
     return f"""
-<section class="demo" id="demo-{idx}">
-  <h2>Demo {idx}. {_esc(headline)}</h2>
-  <div class="opener">"{_esc(sc.get('user_message', ''))}"</div>
+<section class="slide" id="slide-{idx}" data-slide="{idx}">
+  <div class="intro">
+    <div class="eyebrow">Demo {idx} of {total}</div>
+    <h1>{_esc(headline)}</h1>
+  </div>
+  <div class="opener">{_esc(sc.get('user_message', ''))}</div>
   <div class="compare">
-    {_render_side("Before · Student", models['student_model'], "student", s_events)}
-    {_render_side("After · Fine-tuned", models['ft_model'], "ft", f_events)}
+    {_render_side("Before", models['student_model'], "before", s_events)}
+    <div class="divider"></div>
+    {_render_side("After", models['ft_model'], "after", f_events)}
   </div>
 </section>
 """
@@ -319,12 +441,9 @@ JS = r"""
   function setupSide(sideEl) {
     const dataNode = sideEl.querySelector('.events-data');
     let events;
-    try {
-      events = JSON.parse(dataNode.textContent).events;
-    } catch (e) {
-      console.error('events parse failed', e);
-      return;
-    }
+    try { events = JSON.parse(dataNode.textContent).events; }
+    catch (e) { console.error('events parse failed', e); return; }
+
     const chipsEl  = sideEl.querySelector('[data-chips]');
     const scriptEl = sideEl.querySelector('[data-script]');
     const playBtn  = sideEl.querySelector('[data-action="play"]');
@@ -335,40 +454,34 @@ JS = r"""
     let placeholderRemoved = false;
     let playing = false;
 
-    function clearAll() {
-      timers.forEach(t => clearTimeout(t));
-      timers = [];
-    }
+    function clearAll() { timers.forEach(t => clearTimeout(t)); timers = []; }
 
     function reset() {
       clearAll();
       scriptEl.innerHTML = '';
-      chipsEl.innerHTML = '<span class="placeholder">tools will appear here</span>';
+      chipsEl.innerHTML = '<span class="chip ghost">tools appear as the agent calls them</span>';
       placeholderRemoved = false;
       typingEl = null;
       playing = false;
-      playBtn.textContent = '▶ Play';
+      playBtn.innerHTML = '▶';
     }
 
     function showTyping(who) {
       removeTyping();
       const el = document.createElement('div');
       el.className = 'typing';
-      el.innerHTML = '<span>' + who + ' typing</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      el.innerHTML = '<span>' + who + '</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>';
       scriptEl.appendChild(el);
       scriptEl.scrollTop = scriptEl.scrollHeight;
       typingEl = el;
     }
-
-    function removeTyping() {
-      if (typingEl) { typingEl.remove(); typingEl = null; }
-    }
+    function removeTyping() { if (typingEl) { typingEl.remove(); typingEl = null; } }
 
     function addTurn(role, body) {
       removeTyping();
       const t = document.createElement('div');
       t.className = 'turn ' + role;
-      const who = role === 'customer' ? '👤 Customer' : '🤖 Agent';
+      const who = role === 'customer' ? 'Customer' : 'Agent';
       t.innerHTML = '<div class="who">' + who + '</div><div class="body">' + escapeHtml(body) + '</div>';
       scriptEl.appendChild(t);
       requestAnimationFrame(() => t.classList.add('show'));
@@ -377,7 +490,7 @@ JS = r"""
 
     function addChip(name, kind) {
       if (!placeholderRemoved) {
-        const ph = chipsEl.querySelector('.placeholder');
+        const ph = chipsEl.querySelector('.ghost');
         if (ph) ph.remove();
         placeholderRemoved = true;
       }
@@ -392,13 +505,13 @@ JS = r"""
       if (playing) return;
       reset();
       playing = true;
-      playBtn.textContent = '⏵ Playing…';
+      playBtn.innerHTML = '<span style="font-size:0.7rem;letter-spacing:0;">●</span>';
 
       let t = 200;
       events.forEach(ev => {
         if (ev.type === 'turn') {
           const thinkMs = ev.role === 'customer' ? CUSTOMER_THINK_MS : AGENT_THINK_MS;
-          const who = ev.role === 'customer' ? '👤 Customer' : '🤖 Agent';
+          const who = ev.role === 'customer' ? 'Customer' : 'Agent';
           timers.push(setTimeout(() => showTyping(who), t));
           t += thinkMs;
           timers.push(setTimeout(() => addTurn(ev.role, ev.body), t));
@@ -410,7 +523,8 @@ JS = r"""
       });
       timers.push(setTimeout(() => {
         playing = false;
-        playBtn.textContent = '▶ Play again';
+        playBtn.innerHTML = '↻';
+        setTimeout(() => { if (!playing) playBtn.innerHTML = '▶'; }, 1600);
       }, t + 300));
     }
 
@@ -418,8 +532,58 @@ JS = r"""
     resetBtn.addEventListener('click', reset);
   }
 
+  function setupNav() {
+    const deck = document.querySelector('.deck');
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const dots = Array.from(document.querySelectorAll('.dot'));
+    const counter = document.querySelector('.counter');
+    const total = slides.length;
+
+    function go(i) {
+      i = Math.max(0, Math.min(total - 1, i));
+      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting && en.intersectionRatio > 0.55) {
+          const idx = parseInt(en.target.dataset.slide, 10) - 1;
+          dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+          if (counter) {
+            counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+          }
+        }
+      });
+    }, { root: deck, threshold: [0.55] });
+    slides.forEach(s => io.observe(s));
+
+    document.addEventListener('keydown', e => {
+      const cur = dots.findIndex(d => d.classList.contains('active'));
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault(); go(cur + 1);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault(); go(cur - 1);
+      } else if (e.key === 'Home') { e.preventDefault(); go(0); }
+      else if (e.key === 'End') { e.preventDefault(); go(total - 1); }
+    });
+
+    const prev = document.querySelector('[data-nav="prev"]');
+    const next = document.querySelector('[data-nav="next"]');
+    if (prev) prev.addEventListener('click', () => {
+      const cur = dots.findIndex(d => d.classList.contains('active'));
+      go(cur - 1);
+    });
+    if (next) next.addEventListener('click', () => {
+      const cur = dots.findIndex(d => d.classList.contains('active'));
+      go(cur + 1);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.side').forEach(setupSide);
+    setupNav();
   });
 })();
 """
@@ -432,32 +596,44 @@ def main() -> None:
         "ft_model": data.get("ft_model", "?"),
     }
     demos = data.get("demos", [])
-    demo_html = "\n".join(_render_demo(d, i + 1, models) for i, d in enumerate(demos))
+    total = len(demos)
+    slides_html = "\n".join(_render_slide(d, i + 1, total, models) for i, d in enumerate(demos))
+    dots_html = "\n".join(
+        f'<button class="dot{" active" if i == 0 else ""}" data-i="{i}" aria-label="Demo {i+1}"></button>'
+        for i in range(total)
+    )
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Distillation showcase</title>
+<title>Distillation · before & after</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500;600&display=swap">
 <style>{CSS}</style>
 </head>
 <body>
-<header class="page">
-  <h1>Student → Fine-tuned · side-by-side</h1>
-  <div class="sub">Left = before. Right = after. Same opener, same customer simulator. Press <strong>▶ Play</strong> on either card.</div>
-</header>
-<main>
-  {demo_html}
-  <footer>Generated from <code>results/eval_result/demo_transcripts.json</code> · <code>scripts/build_showcase_html.py</code></footer>
-</main>
+<div class="topbar">
+  <div class="brand">Distillation · Before / After</div>
+  <div class="dots">{dots_html}</div>
+  <div class="counter">01 / {total:02d}</div>
+</div>
+<div class="deck">
+  {slides_html}
+</div>
+<div class="arrows">
+  <button class="iconbtn" data-nav="prev" title="Previous (↑)">↑</button>
+  <button class="iconbtn" data-nav="next" title="Next (↓)">↓</button>
+</div>
 <script>{JS}</script>
 </body>
 </html>
 """
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(page, encoding="utf-8")
-    print(f"wrote {OUT_PATH.relative_to(REPO_ROOT)}  ({os.path.getsize(OUT_PATH):,} bytes, {len(demos)} demos)")
+    print(f"wrote {OUT_PATH.relative_to(REPO_ROOT)}  ({os.path.getsize(OUT_PATH):,} bytes, {total} demos)")
 
 
 if __name__ == "__main__":
