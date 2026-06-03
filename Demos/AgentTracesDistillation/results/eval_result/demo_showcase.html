@@ -243,8 +243,8 @@ body.dark .side.after  .iconbtn.play { color: #0c0d10; }
 .script::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
 
 .turn {
-  margin-bottom: 12px;
-  font-size: 0.94rem;
+  margin-bottom: 14px;
+  font-size: 1.08rem;
   line-height: 1.55;
   opacity: 0;
   transform: translateY(6px);
@@ -252,51 +252,51 @@ body.dark .side.after  .iconbtn.play { color: #0c0d10; }
 }
 .turn.show { opacity: 1; transform: translateY(0); }
 .turn .who {
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 600;
   color: var(--ink-mute);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 .turn .body {
   white-space: pre-wrap;
   word-wrap: break-word;
   color: var(--ink);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 6px;
   background: var(--customer);
   border-left: 2px solid var(--ink-mute);
-  max-width: 95%;
+  max-width: 96%;
 }
 .side.before .turn.agent .body { background: var(--before-soft); border-left-color: var(--before); }
 .side.after  .turn.agent .body { background: var(--after-soft);  border-left-color: var(--after); }
 
 /* inline tool call block (the key visual: name + arg values) */
 .toolcall {
-  margin: 4px 0 12px 0;
-  padding: 9px 14px 10px;
+  margin: 4px 0 14px 0;
+  padding: 11px 16px 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   background: var(--good-soft);
   border: 1px solid var(--rule);
   border-left: 3px solid var(--good);
   border-radius: 5px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   opacity: 0;
   transform: translateX(-4px);
   transition: opacity 240ms ease, transform 240ms ease;
 }
 .toolcall.show { opacity: 1; transform: translateX(0); }
 .toolcall .head {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 5px;
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 6px;
 }
 .toolcall .glyph {
   font-family: inherit;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: 3px;
   color: var(--good);
   background: var(--good-glyph-bg);
@@ -305,15 +305,15 @@ body.dark .side.after  .iconbtn.play { color: #0c0d10; }
 .toolcall .name {
   color: var(--ink);
   font-weight: 600;
-  font-size: 0.86rem;
+  font-size: 1rem;
 }
 .toolcall .args {
   display: grid;
   grid-template-columns: max-content 1fr;
-  column-gap: 14px;
-  row-gap: 3px;
+  column-gap: 16px;
+  row-gap: 4px;
   padding-left: 2px;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 .toolcall .args .k { color: var(--ink-mute); }
@@ -322,19 +322,19 @@ body.dark .side.after  .iconbtn.play { color: #0c0d10; }
 .toolcall .empty {
   font-style: italic;
   color: var(--ink-mute);
-  font-size: 0.76rem;
+  font-size: 0.86rem;
   font-family: "Inter", sans-serif;
 }
 
 /* typing indicator */
 .typing {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px;
   background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: 14px;
   margin-bottom: 12px;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-mute);
