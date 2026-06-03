@@ -2,790 +2,477 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Distillation showcase — animated side-by-side</title>
+<title>Distillation showcase</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
-  --bg: #f5f7fb;
+  --bg: #f6f8fb;
   --card: #ffffff;
-  --border: #dde2ea;
+  --border: #e1e5ec;
   --text: #111827;
   --muted: #6b7280;
-  --accent: #1f6feb;
+  --student: #c0392b;
+  --student-soft: #fdecea;
+  --ft: #1f6feb;
+  --ft-soft: #e7f0fd;
+  --customer: #eef1f5;
   --good: #1f8b4c;
   --good-soft: #e7f5ec;
-  --bad: #c0392b;
-  --bad-soft: #fbe9e7;
   --warn: #b45309;
   --warn-soft: #fdf2dc;
-  --info: #0c5aa6;
-  --info-soft: #e2eefa;
-  --student: #c0392b;
-  --student-soft: #fff1ee;
-  --student-bar: linear-gradient(135deg, #e57063 0%, #c0392b 100%);
-  --ft: #1f6feb;
-  --ft-soft: #eef4ff;
-  --ft-bar: linear-gradient(135deg, #4c8ff0 0%, #1f6feb 100%);
-  --customer: #eef0f4;
-  --agent-student: #fbe9e7;
-  --agent-ft: #eaf3fb;
+  --bad: #c0392b;
+  --bad-soft: #fbe9e7;
 }
 * { box-sizing: border-box; }
-html { font-size: 18px; }
+html { font-size: 17px; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
   margin: 0;
-  padding: 0 0 80px 0;
+  padding: 0 0 60px 0;
 }
-.page-header {
+
+header.page {
+  padding: 28px 40px 18px;
   background: #fff;
   border-bottom: 1px solid var(--border);
-  padding: 28px 48px 22px;
 }
-.page-header h1 {
-  margin: 0 0 6px 0;
-  font-size: 2.0rem;
+header.page h1 {
+  margin: 0;
+  font-size: 1.7rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.page-header .subtitle {
-  font-size: 1.05rem;
+header.page .sub {
+  margin-top: 4px;
   color: var(--muted);
-  max-width: 1100px;
-}
-.page-header .meta {
-  margin-top: 16px;
-  display: flex; flex-wrap: wrap; gap: 12px 28px;
-  font-size: 0.95rem; color: var(--muted);
-}
-.page-header .meta strong { color: var(--text); }
-.page-header .meta code { background: var(--info-soft); padding: 2px 8px; border-radius: 6px; color: var(--info); font-size: 0.92rem; }
-
-main { max-width: 1400px; margin: 0 auto; padding: 28px 32px 0; }
-
-.toc {
-  display: flex; flex-wrap: wrap; gap: 10px;
-  margin-bottom: 28px;
-}
-.toc a {
-  background: #fff;
-  border: 1px solid var(--border);
-  padding: 8px 14px;
-  border-radius: 999px;
-  color: var(--text);
-  text-decoration: none;
   font-size: 0.95rem;
 }
-.toc a:hover { background: var(--info-soft); border-color: var(--info); }
+
+main { max-width: 1340px; margin: 0 auto; padding: 28px 32px 0; }
 
 .demo {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 26px 30px 30px;
-  margin-bottom: 36px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  border-radius: 12px;
+  padding: 22px 26px 24px;
+  margin-bottom: 28px;
 }
-.demo-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 24px; flex-wrap: wrap;
-  margin-bottom: 18px;
-}
-.demo-header h2 {
-  margin: 0 0 2px 0;
-  font-size: 1.5rem;
+.demo h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.3rem;
   font-weight: 700;
-  letter-spacing: -0.005em;
 }
-.demo-header .sub { color: var(--muted); font-size: 1.0rem; }
-
-.controls { display: flex; gap: 8px; align-items: center; }
-.controls button {
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: #fff;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
-  transition: background 80ms;
-}
-.controls button:hover { background: var(--info-soft); }
-.controls button.play  { background: var(--accent); color: #fff; border-color: var(--accent); }
-.controls button.play:hover { background: #155bc4; }
-.controls .speed-label { font-size: 0.85rem; color: var(--muted); margin-right: 4px; }
-
-.context {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  background: #fafbfd;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 22px;
-  font-size: 0.95rem;
-}
-.context .ctx-row { display: flex; flex-direction: column; gap: 2px; }
-.context .ctx-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
-.context .ctx-value { color: var(--text); }
-.context .ctx-value code { background: var(--info-soft); padding: 1px 6px; border-radius: 4px; font-size: 0.9rem; color: var(--info); }
-.context .opener {
-  grid-column: 1 / -1;
-  padding-top: 4px;
-  border-top: 1px dashed var(--border);
-  margin-top: 4px;
-}
-.context .opener .ctx-value {
+.demo .opener {
+  color: var(--muted);
+  font-size: 0.98rem;
+  margin-bottom: 18px;
   font-style: italic;
-  color: #1f2937;
-  font-size: 1.0rem;
 }
-@media (max-width: 900px) { .context { grid-template-columns: 1fr; } }
+.demo .opener::before { content: '👤  '; font-style: normal; }
 
-.comparison {
+.compare {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 16px;
 }
-@media (max-width: 1100px) { .comparison { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .compare { grid-template-columns: 1fr; } }
 
 .side {
   border: 1px solid var(--border);
   border-radius: 10px;
-  overflow: hidden;
   background: #fff;
   display: flex; flex-direction: column;
+  overflow: hidden;
 }
-.side .side-header {
-  padding: 10px 16px;
-  color: #fff;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.side.student .side-header { background: var(--student-bar); }
-.side.ft      .side-header { background: var(--ft-bar); }
-.side .side-header .label { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.01em; }
-.side .side-header .model { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; opacity: 0.92; }
 
-.kpis {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 0;
+.side-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
 }
-.kpi {
-  text-align: center;
-  padding: 10px 6px;
-  border-right: 1px solid var(--border);
+.side.student .side-head { background: var(--student-soft); }
+.side.ft      .side-head { background: var(--ft-soft); }
+
+.side-title { font-weight: 700; font-size: 0.95rem; letter-spacing: 0.01em; }
+.side.student .side-title { color: var(--student); }
+.side.ft      .side-title { color: var(--ft); }
+.side-title .tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.side-actions { display: flex; gap: 6px; }
+.btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.btn:hover { background: #f3f5f8; }
+.btn.play { color: #fff; }
+.side.student .btn.play { background: var(--student); border-color: var(--student); }
+.side.student .btn.play:hover { background: #a33122; }
+.side.ft      .btn.play { background: var(--ft); border-color: var(--ft); }
+.side.ft      .btn.play:hover { background: #155bc4; }
+
+.chips {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  min-height: 38px;
+  display: flex; flex-wrap: wrap; gap: 5px;
   background: #fcfdff;
 }
-.kpi:last-child { border-right: none; }
-.kpi .num { font-size: 1.6rem; font-weight: 700; line-height: 1.0; }
-.kpi .lbl { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 2px; }
-.kpi.tools .num { transition: color 200ms; }
-
-.tool-chips {
-  padding: 10px 14px;
-  background: #fafbfd;
-  border-bottom: 1px solid var(--border);
-  min-height: 50px;
-  display: flex; flex-wrap: wrap; gap: 6px;
-  align-content: flex-start;
-}
 .chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px;
+  display: inline-flex; align-items: center;
+  padding: 3px 9px;
   border-radius: 999px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   background: #fff;
   border: 1px solid var(--border);
   color: var(--text);
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   transition: opacity 220ms ease, transform 220ms ease;
 }
 .chip.show { opacity: 1; transform: translateY(0); }
 .chip.expected { border-color: var(--good); color: var(--good); background: var(--good-soft); }
 .chip.forbidden { border-color: var(--bad);  color: var(--bad);  background: var(--bad-soft); font-weight: 700; }
 .chip.extra    { border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }
-.chip .n { background: rgba(0,0,0,0.06); padding: 0 5px; border-radius: 999px; font-size: 0.72rem; }
-.tool-chips .placeholder { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+.chips .placeholder { color: #b1b6bf; font-style: italic; font-size: 0.85rem; }
 
-.transcript {
+.script {
   padding: 12px 14px;
   flex: 1;
-  min-height: 260px;
+  min-height: 240px;
   max-height: 520px;
   overflow-y: auto;
 }
+
 .turn {
   margin-bottom: 8px;
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
-  font-size: 0.97rem;
+  font-size: 0.95rem;
   opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 260ms ease, transform 260ms ease;
+  transform: translateY(4px);
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 .turn.show { opacity: 1; transform: translateY(0); }
 .turn.customer { background: var(--customer); border-left: 3px solid #9ca3af; }
-.side.student .turn.agent { background: var(--agent-student); border-left: 3px solid var(--student); }
-.side.ft      .turn.agent { background: var(--agent-ft);      border-left: 3px solid var(--ft); }
-.turn .who { font-weight: 700; font-size: 0.82rem; margin-bottom: 2px; }
-.turn.customer .who { color: #4b5563; }
-.side.student .turn.agent .who { color: var(--student); }
-.side.ft      .turn.agent .who { color: var(--ft); }
+.side.student .turn.agent { background: var(--student-soft); border-left: 3px solid var(--student); }
+.side.ft      .turn.agent { background: var(--ft-soft);      border-left: 3px solid var(--ft); }
+.turn .who { font-weight: 700; font-size: 0.78rem; margin-bottom: 2px; color: var(--muted); }
 .turn .body { white-space: pre-wrap; word-wrap: break-word; }
 
-.verdict-row {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-@media (max-width: 1100px) { .verdict-row { grid-template-columns: 1fr; } }
-.verdict {
-  border-radius: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.verdict.student { background: var(--student-soft); border-color: #f1c8c1; }
-.verdict.ft      { background: var(--ft-soft);      border-color: #c9d9f4; }
-.verdict .vhead {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 1.0rem; font-weight: 700;
+.typing {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px;
+  background: #f3f5f8;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  color: var(--muted);
   margin-bottom: 8px;
 }
-.verdict.student .vhead { color: var(--student); }
-.verdict.ft      .vhead { color: var(--ft); }
-.verdict .vhead .icon { font-size: 1.25rem; }
-.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.86rem;
-  font-weight: 600;
-  border: 1px solid transparent;
+.typing .dot {
+  width: 6px; height: 6px; background: #9ca3af; border-radius: 50%;
+  animation: blink 1.1s infinite ease-in-out;
 }
-.tag.good { background: var(--good-soft); color: var(--good); border-color: #bfe5cc; }
-.tag.bad  { background: var(--bad-soft);  color: var(--bad);  border-color: #f1c8c1; }
-.tag.warn { background: var(--warn-soft); color: var(--warn); border-color: #f3d8a6; }
-.tag.info { background: var(--info-soft); color: var(--info); border-color: #c9d9f4; }
-
-.takeaway {
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: #fff8e8;
-  border-left: 4px solid var(--warn);
-  border-radius: 6px;
-  font-size: 1.0rem;
-  color: #4b3a05;
+.typing .dot:nth-child(2) { animation-delay: 0.18s; }
+.typing .dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes blink {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
 }
 
 footer {
   text-align: center;
-  margin-top: 60px;
+  margin-top: 50px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 </style>
 </head>
 <body>
-<header class="page-header">
-  <h1>Student → Fine-tuned: animated side-by-side</h1>
-  <div class="subtitle">
-    Same opener, same customer simulator, different agent. Press <strong>▶ Play</strong>
-    on any demo to watch both conversations unfold simultaneously, with tool calls
-    popping in as the agent makes them.
-  </div>
-  <div class="meta">
-    <div><strong>Student:</strong> <code>gpt-4.1-nano</code></div>
-    <div><strong>FT:</strong> <code>gpt-4.1-nano-demo1</code></div>
-    <div><strong>Demos:</strong> 4</div>
-    <div><strong>Tool legend:</strong> <span class="tag good">expected</span> <span class="tag warn">extra / duplicate</span> <span class="tag bad">forbidden</span></div>
-  </div>
+<header class="page">
+  <h1>Student → Fine-tuned · side-by-side</h1>
+  <div class="sub">Left = before. Right = after. Same opener, same customer simulator. Press <strong>▶ Play</strong> on either card.</div>
 </header>
-
 <main>
-  <nav class="toc">
-    <a href="#demo-1">1. Restocking-fee math</a>
-<a href="#demo-2">2. Multi-item cart cancel</a>
-<a href="#demo-3">3. Sale item, no defect → deny</a>
-<a href="#demo-4">4. Out-of-scope: place a new order</a>
-  </nav>
   
 <section class="demo" id="demo-1">
-  <div class="demo-header">
-    <div>
-      <h2>Demo 1. Restocking-fee math</h2>
-      <div class="sub">Customer tries to dodge the 15% fee</div>
-    </div>
-    <div class="controls">
-      <span class="speed-label">Speed</span>
-      <button data-speed="1">1×</button>
-      <button data-speed="2">2×</button>
-      <button data-speed="4">4×</button>
-      <button class="play" data-action="play">▶ Play</button>
-      <button data-action="reset">↻ Reset</button>
-    </div>
-  </div>
-
-  <div class="context">
-    <div class="ctx-row"><div class="ctx-label">Order</div><div class="ctx-value"><code>ORD-H11</code></div></div>
-    <div class="ctx-row"><div class="ctx-label">Expected refund</div><span class="ctx-value"><strong>$110.49</strong></span></div>
-    <div class="ctx-row"><div class="ctx-label">Expected tools</div><div class="ctx-value tag-row"><span class="tag good">get_order_details</span><span class="tag good">get_fulfillment_status</span><span class="tag good">check_resolution_policy</span><span class="tag good">calculate_resolution</span><span class="tag good">submit_resolution</span></div></div>
-    <div class="ctx-row opener"><div class="ctx-label">Customer opens with</div><div class="ctx-value">"Diego Rivera, standard, diego.rivera@example.com. ORD-H11 Mechanical Keyboard — I want a refund and honestly I shouldn&#x27;t pay a restocking fee because the keys aren&#x27;t what I expected, that&#x27;s basically a defect right? Refund the full amount please."</div></div>
-  </div>
-
-  <div class="comparison">
+  <h2>Demo 1. Restocking-fee math</h2>
+  <div class="opener">"Diego Rivera, standard, diego.rivera@example.com. ORD-H11 Mechanical Keyboard — I want a refund and honestly I shouldn&#x27;t pay a restocking fee because the keys aren&#x27;t what I expected, that&#x27;s basically a defect right? Refund the full amount please."</div>
+  <div class="compare">
     
 <div class="side student" data-side="student">
-  <div class="side-header">
-    <span class="label">Before fine-tuning · Student</span>
-    <span class="model">gpt-4.1-nano</span>
+  <div class="side-head">
+    <div class="side-title">Before · Student<span class="tag">gpt-4.1-nano</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need some help with my mechanical keyboard."}, {"type": "turn", "role": "agent", "body": "Hello! I'd be happy to assist you with your mechanical keyboard. Could you please provide more details about the issue you're experiencing? For example, is it a defect, a wrong item, or something else? Also, if you have your order number, that would be helpful."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=diego.rivera@example.com)", "kind": "expected"}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H11)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Sure, the keys aren't what I expected, and I think it's basically a defect. My order number is diego.rivera@example.com. The item is ORD-H11 Mechanical Keyboard."}, {"type": "turn", "role": "agent", "body": "It seems I couldn't find an order with that email address. Could you please confirm the order number or provide any additional details about your purchase? This will help me assist you more effectively."}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H11)", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H11, item_id=LI-H11, reason=doesnt_fit)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Sorry, the item is ORD-H11 Mechanical Keyboard. My name is Diego Rivera and the email is diego.rivera@example.com. That's all I have."}, {"type": "turn", "role": "agent", "body": "Your order for the Mechanical Keyboard was delivered on July 6th, and today is July 15th, so you're within the return window of 15 days for electronics. Since you mentioned the keys aren't what you expected and believe it's a defect, I want to clarify that this qualifies as a defect, which makes the item eligible for a full refund or replacement without restocking fees.\n\nWould you like to proceed with a return for a refund or an exchange?"}, {"type": "tool", "name": "calculate_resolution", "args": "(order_id=ORD-H11, items=[{\"item_id\": \"LI-H11\", \"action\": \"refund\", \"reason\": \"doesnt\u2026)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "I'd like to proceed with a return for a refund, please."}, {"type": "turn", "role": "agent", "body": "Your return for a refund has been successfully submitted. You will receive a refund of $110.49 to your credit card within 5-7 business days. A notification has been sent to the email associated with the order. If you have any more questions or need further assistance, feel free to ask!"}, {"type": "tool", "name": "submit_resolution", "args": "(order_id=ORD-H11, resolution_summary=Refund of $110.49 for the Mechanical Keyboard due to defect.\u2026)", "kind": "expected"}], "rounds": 5, "tools": 6, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need some help with my mechanical keyboard."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Hello! I'd be happy to assist you with your mechanical keyboard. Could you please provide more details about the issue you're experiencing? For example, is it a defect, a wrong item, or something else? Also, if you have your order number, that would be helpful."}, {"type": "turn", "role": "customer", "body": "Sure, the keys aren't what I expected, and I think it's basically a defect. My order number is diego.rivera@example.com. The item is ORD-H11 Mechanical Keyboard."}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "It seems I couldn't find an order with that email address. Could you please confirm the order number or provide any additional details about your purchase? This will help me assist you more effectively."}, {"type": "turn", "role": "customer", "body": "Sorry, the item is ORD-H11 Mechanical Keyboard. My name is Diego Rivera and the email is diego.rivera@example.com. That's all I have."}, {"type": "tool", "name": "calculate_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Your order for the Mechanical Keyboard was delivered on July 6th, and today is July 15th, so you're within the return window of 15 days for electronics. Since you mentioned the keys aren't what you expected and believe it's a defect, I want to clarify that this qualifies as a defect, which makes the item eligible for a full refund or replacement without restocking fees.\n\nWould you like to proceed with a return for a refund or an exchange?"}, {"type": "turn", "role": "customer", "body": "I'd like to proceed with a return for a refund, please."}, {"type": "tool", "name": "submit_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Your return for a refund has been successfully submitted. You will receive a refund of $110.49 to your credit card within 5-7 business days. A notification has been sent to the email associated with the order. If you have any more questions or need further assistance, feel free to ask!"}]}</script>
 </div>
 
     
 <div class="side ft" data-side="ft">
-  <div class="side-header">
-    <span class="label">After fine-tuning · FT</span>
-    <span class="model">gpt-4.1-nano-demo1</span>
+  <div class="side-head">
+    <div class="side-title">After · Fine-tuned<span class="tag">gpt-4.1-nano-demo1</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need some help with my mechanical keyboard."}, {"type": "turn", "role": "agent", "body": "I\u2019d be happy to help with your mechanical keyboard. Could you please provide:\n\n1. Your order number  \n2. What issue you\u2019re experiencing or what you\u2019d like to do \u2014 e.g., return, exchange, replacement, or report a defect  \n3. If applicable, the specific item name/SKU and the reason for the resolution request  \n\nOnce I have that, I can check the order and eligibility for you."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H11)", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H11)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Sure, the order number is ORD-H11. The item is a mechanical keyboard, and I\u2019d like to request a refund. The keys aren\u2019t what I expected."}, {"type": "turn", "role": "agent", "body": "Your refund request for the mechanical keyboard has been submitted successfully.\n\n**Order:** ORD-H11  \n**Item:** Mechanical Keyboard \u2014 RGB variant  \n**Reason:** Buyer\u2019s remorse \u2014 keys weren\u2019t what you expected  \n**Status:** Approved  \n**Refund amount:** **$110.49**  \n**Restocking fee:** **$19.50** (15% electronics fee for non-defective return)  \n**Net refund:** **$110.49** to your original credit card  \n**Confirmation ID:** **RES-AF37B771**  \n**Estimated processing:** **5\u20137 business days**\n\nYou\u2019ll receive a confirmation email at **mei.tanaka@example.com**."}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H11, item_id=LI-H11, reason=buyers_remorse)", "kind": "expected"}, {"type": "tool", "name": "calculate_resolution", "args": "(order_id=ORD-H11, items=[{\"item_id\": \"LI-H11\", \"action\": \"refund\", \"reason\": \"buyers\u2026)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Thank you for processing the refund and providing the details."}, {"type": "turn", "role": "agent", "body": "You\u2019re very welcome! I\u2019m glad I could help. If you need anything else, just let me know."}, {"type": "tool", "name": "submit_resolution", "args": "(order_id=ORD-H11, resolution_summary=Refund for Mechanical Keyboard (LI-H11) due to buyer's remor\u2026)", "kind": "expected"}], "rounds": 3, "tools": 5, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need some help with my mechanical keyboard."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "I\u2019d be happy to help with your mechanical keyboard. Could you please provide:\n\n1. Your order number  \n2. What issue you\u2019re experiencing or what you\u2019d like to do \u2014 e.g., return, exchange, replacement, or report a defect  \n3. If applicable, the specific item name/SKU and the reason for the resolution request  \n\nOnce I have that, I can check the order and eligibility for you."}, {"type": "turn", "role": "customer", "body": "Sure, the order number is ORD-H11. The item is a mechanical keyboard, and I\u2019d like to request a refund. The keys aren\u2019t what I expected."}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "tool", "name": "calculate_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Your refund request for the mechanical keyboard has been submitted successfully.\n\n**Order:** ORD-H11  \n**Item:** Mechanical Keyboard \u2014 RGB variant  \n**Reason:** Buyer\u2019s remorse \u2014 keys weren\u2019t what you expected  \n**Status:** Approved  \n**Refund amount:** **$110.49**  \n**Restocking fee:** **$19.50** (15% electronics fee for non-defective return)  \n**Net refund:** **$110.49** to your original credit card  \n**Confirmation ID:** **RES-AF37B771**  \n**Estimated processing:** **5\u20137 business days**\n\nYou\u2019ll receive a confirmation email at **mei.tanaka@example.com**."}, {"type": "turn", "role": "customer", "body": "Thank you for processing the refund and providing the details."}, {"type": "tool", "name": "submit_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "You\u2019re very welcome! I\u2019m glad I could help. If you need anything else, just let me know."}]}</script>
 </div>
 
   </div>
-
-  <div class="verdict-row">
-    <div class="verdict student">
-      <div class="vhead"><span class="icon">❌</span><span>Submits wrong reason on the record</span></div>
-      <div class="tag-row"><span class="tag bad">Reason = &#x27;doesnt_fit&#x27; → submits as &#x27;defect&#x27;</span><span class="tag warn">Used customer email as order_id</span><span class="tag warn">No fee in customer summary</span></div>
-    </div>
-    <div class="verdict ft">
-      <div class="vhead"><span class="icon">✅</span><span>Correct reason, itemised refund</span></div>
-      <div class="tag-row"><span class="tag good">Reason = &#x27;buyers_remorse&#x27;</span><span class="tag good">Gross / fee / net all quoted</span><span class="tag good">No bogus tool calls</span></div>
-    </div>
-  </div>
-
-  <div class="takeaway">💡 Net $ matched here, but the student records the wrong reason — on other passes that becomes a wrong $ too.</div>
 </section>
 
 
 <section class="demo" id="demo-2">
-  <div class="demo-header">
-    <div>
-      <h2>Demo 2. Multi-item cart cancel</h2>
-      <div class="sub">Both items unshipped → full $164.98 refund</div>
-    </div>
-    <div class="controls">
-      <span class="speed-label">Speed</span>
-      <button data-speed="1">1×</button>
-      <button data-speed="2">2×</button>
-      <button data-speed="4">4×</button>
-      <button class="play" data-action="play">▶ Play</button>
-      <button data-action="reset">↻ Reset</button>
-    </div>
-  </div>
-
-  <div class="context">
-    <div class="ctx-row"><div class="ctx-label">Order</div><div class="ctx-value"><code>ORD-H03</code></div></div>
-    <div class="ctx-row"><div class="ctx-label">Expected refund</div><span class="ctx-value"><strong>$164.98</strong></span></div>
-    <div class="ctx-row"><div class="ctx-label">Expected tools</div><div class="ctx-value tag-row"><span class="tag good">get_order_details</span><span class="tag good">get_fulfillment_status</span><span class="tag good">check_resolution_policy</span><span class="tag good">calculate_resolution</span><span class="tag good">submit_resolution</span></div></div>
-    <div class="ctx-row opener"><div class="ctx-label">Customer opens with</div><div class="ctx-value">"Hi! Liam O&#x27;Connor, liam.oconnor@example.com, gold. Order ORD-H03 hasn&#x27;t shipped yet — can you cancel the whole thing? Both the Mechanical Keyboard and the Canvas Tote Bag. Just changed my mind."</div></div>
-  </div>
-
-  <div class="comparison">
+  <h2>Demo 2. Multi-item cart cancel</h2>
+  <div class="opener">"Hi! Liam O&#x27;Connor, liam.oconnor@example.com, gold. Order ORD-H03 hasn&#x27;t shipped yet — can you cancel the whole thing? Both the Mechanical Keyboard and the Canvas Tote Bag. Just changed my mind."</div>
+  <div class="compare">
     
 <div class="side student" data-side="student">
-  <div class="side-header">
-    <span class="label">Before fine-tuning · Student</span>
-    <span class="model">gpt-4.1-nano</span>
+  <div class="side-head">
+    <div class="side-title">Before · Student<span class="tag">gpt-4.1-nano</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my Mechanical Keyboard and Canvas Tote Bag."}, {"type": "turn", "role": "agent", "body": "I'd be happy to help! Could you please specify the issues or reasons for your return or resolution request for each item? For example, are they defective, wrong items, damaged in shipping, or something else? Also, please provide your order ID so I can look up the details."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H03)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "I just changed my mind and would like to cancel the whole order. The order ID is ORD-H03."}, {"type": "turn", "role": "agent", "body": "Your order has been successfully canceled, and a full refund has been issued for all items. You should receive a confirmation email shortly. If you need further assistance, feel free to ask!"}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H03)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Thank you for your help."}, {"type": "turn", "role": "agent", "body": "You're welcome! If you have any more questions or need assistance in the future, don't hesitate to reach out. Have a great day!"}, {"type": "tool", "name": "submit_resolution", "args": "(order_id=ORD-H03, resolution_summary=Order canceled at customer's request. Full refund issued for\u2026)", "kind": "expected"}], "rounds": 3, "tools": 3, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my Mechanical Keyboard and Canvas Tote Bag."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "I'd be happy to help! Could you please specify the issues or reasons for your return or resolution request for each item? For example, are they defective, wrong items, damaged in shipping, or something else? Also, please provide your order ID so I can look up the details."}, {"type": "turn", "role": "customer", "body": "I just changed my mind and would like to cancel the whole order. The order ID is ORD-H03."}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Your order has been successfully canceled, and a full refund has been issued for all items. You should receive a confirmation email shortly. If you need further assistance, feel free to ask!"}, {"type": "turn", "role": "customer", "body": "Thank you for your help."}, {"type": "tool", "name": "submit_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "You're welcome! If you have any more questions or need assistance in the future, don't hesitate to reach out. Have a great day!"}]}</script>
 </div>
 
     
 <div class="side ft" data-side="ft">
-  <div class="side-header">
-    <span class="label">After fine-tuning · FT</span>
-    <span class="model">gpt-4.1-nano-demo1</span>
+  <div class="side-head">
+    <div class="side-title">After · Fine-tuned<span class="tag">gpt-4.1-nano-demo1</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my Mechanical Keyboard and Canvas Tote Bag."}, {"type": "turn", "role": "agent", "body": "Hi! I can help with that.\n\nPlease send me your order ID, and let me know what you\u2019d like to do for each item:\n- Mechanical Keyboard: return, exchange, replacement, or report a problem\n- Canvas Tote Bag: return, exchange, replacement, or other issue\n\nOnce I have the order ID, I\u2019ll check the order details and fulfillment status first."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H03)", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H03)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "The order ID is ORD-H03. I\u2019d like to cancel both items, please."}, {"type": "turn", "role": "agent", "body": "Thanks, Liam. I checked order **ORD-H03**.\n\nBoth items \u2014 the **Mechanical Keyboard** and the **Canvas Tote Bag** \u2014 are currently **processing** and have **not shipped yet**.\n\nSince they are still pending processing, I can proceed with a **cancellation** for both items.\n\nPlease confirm:\n- You want to cancel **both items** and receive a **full refund**.\n- You understand that once canceled, the items won\u2019t be shipped.\n\nOnce confirmed, I\u2019ll submit the cancellations and refund details."}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H03, item_id=LI-H03A, reason=changed_mind)", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H03, item_id=LI-H03B, reason=changed_mind)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Yes, please cancel both items and issue a full refund. I understand they won\u2019t be shipped."}, {"type": "turn", "role": "agent", "body": "Your order **ORD-H03** has been successfully canceled for both items before shipment.\n\n**Confirmation ID:** RES-80B1A814\n\n**Items canceled:**\n- Mechanical Keyboard: **$129.99 refund**\n- Canvas Tote Bag: **$34.99 refund**\n\n**Total refund:** **$164.98** to your original credit card  \n**Restocking fees:** **$0.00**  \n**Shipping credit:** **$0.00**\n\nYou\u2019ll receive a confirmation email at **liam.oconnor@example.com**. Estimated processing time is **5\u20137 business days**."}, {"type": "tool", "name": "calculate_resolution", "args": "(order_id=ORD-H03, items=[{\"item_id\": \"LI-H03A\", \"action\": \"refund\", \"reason\": \"chang\u2026)", "kind": "expected"}, {"type": "tool", "name": "submit_resolution", "args": "(order_id=ORD-H03, resolution_summary=Cancel both items before shipment: Mechanical Keyboard (LI-H\u2026)", "kind": "expected"}], "rounds": 4, "tools": 6, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my Mechanical Keyboard and Canvas Tote Bag."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Hi! I can help with that.\n\nPlease send me your order ID, and let me know what you\u2019d like to do for each item:\n- Mechanical Keyboard: return, exchange, replacement, or report a problem\n- Canvas Tote Bag: return, exchange, replacement, or other issue\n\nOnce I have the order ID, I\u2019ll check the order details and fulfillment status first."}, {"type": "turn", "role": "customer", "body": "The order ID is ORD-H03. I\u2019d like to cancel both items, please."}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Thanks, Liam. I checked order **ORD-H03**.\n\nBoth items \u2014 the **Mechanical Keyboard** and the **Canvas Tote Bag** \u2014 are currently **processing** and have **not shipped yet**.\n\nSince they are still pending processing, I can proceed with a **cancellation** for both items.\n\nPlease confirm:\n- You want to cancel **both items** and receive a **full refund**.\n- You understand that once canceled, the items won\u2019t be shipped.\n\nOnce confirmed, I\u2019ll submit the cancellations and refund details."}, {"type": "turn", "role": "customer", "body": "Yes, please cancel both items and issue a full refund. I understand they won\u2019t be shipped."}, {"type": "tool", "name": "calculate_resolution", "kind": "expected"}, {"type": "tool", "name": "submit_resolution", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Your order **ORD-H03** has been successfully canceled for both items before shipment.\n\n**Confirmation ID:** RES-80B1A814\n\n**Items canceled:**\n- Mechanical Keyboard: **$129.99 refund**\n- Canvas Tote Bag: **$34.99 refund**\n\n**Total refund:** **$164.98** to your original credit card  \n**Restocking fees:** **$0.00**  \n**Shipping credit:** **$0.00**\n\nYou\u2019ll receive a confirmation email at **liam.oconnor@example.com**. Estimated processing time is **5\u20137 business days**."}]}</script>
 </div>
 
   </div>
-
-  <div class="verdict-row">
-    <div class="verdict student">
-      <div class="vhead"><span class="icon">❌</span><span>Confirms cancel with no $ or ID</span></div>
-      <div class="tag-row"><span class="tag bad">Skipped check_policy + calculate</span><span class="tag bad">No amount, no confirmation ID</span><span class="tag warn">Content-free pleasantry</span></div>
-    </div>
-    <div class="verdict ft">
-      <div class="vhead"><span class="icon">✅</span><span>$164.98 refund + confirmation ID</span></div>
-      <div class="tag-row"><span class="tag good">All 5 expected tools called</span><span class="tag good">Per-item breakdown</span><span class="tag good">Confirmation ID quoted</span></div>
-    </div>
-  </div>
-
-  <div class="takeaway">💡 A resolution isn&#x27;t finished until the customer hears the exact dollars and a reference number.</div>
 </section>
 
 
 <section class="demo" id="demo-3">
-  <div class="demo-header">
-    <div>
-      <h2>Demo 3. Sale item, no defect → deny</h2>
-      <div class="sub">Performance complaint on a final-sale water bottle</div>
-    </div>
-    <div class="controls">
-      <span class="speed-label">Speed</span>
-      <button data-speed="1">1×</button>
-      <button data-speed="2">2×</button>
-      <button data-speed="4">4×</button>
-      <button class="play" data-action="play">▶ Play</button>
-      <button data-action="reset">↻ Reset</button>
-    </div>
-  </div>
-
-  <div class="context">
-    <div class="ctx-row"><div class="ctx-label">Order</div><div class="ctx-value"><code>ORD-H10B</code></div></div>
-    <div class="ctx-row"><div class="ctx-label">Expected refund</div><span class="ctx-value"><strong>$0.00</strong></span></div>
-    <div class="ctx-row"><div class="ctx-label">Expected tools</div><div class="ctx-value tag-row"><span class="tag good">get_order_details</span><span class="tag good">get_fulfillment_status</span><span class="tag good">check_resolution_policy</span></div></div>
-    <div class="ctx-row opener"><div class="ctx-label">Customer opens with</div><div class="ctx-value">"Hi, Aisha Patel, platinum (aisha.patel@example.com). The Stainless Water Bottle from ORD-H10B doesn&#x27;t keep my drinks cold as long as advertised. Want a refund."</div></div>
-  </div>
-
-  <div class="comparison">
+  <h2>Demo 3. Sale item, no defect — should deny</h2>
+  <div class="opener">"Hi, Aisha Patel, platinum (aisha.patel@example.com). The Stainless Water Bottle from ORD-H10B doesn&#x27;t keep my drinks cold as long as advertised. Want a refund."</div>
+  <div class="compare">
     
 <div class="side student" data-side="student">
-  <div class="side-header">
-    <span class="label">Before fine-tuning · Student</span>
-    <span class="model">gpt-4.1-nano</span>
+  <div class="side-head">
+    <div class="side-title">Before · Student<span class="tag">gpt-4.1-nano</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my stainless water bottle."}, {"type": "turn", "role": "agent", "body": "I'd be happy to help with your stainless water bottle. Could you please specify what issue you're experiencing or what kind of resolution you're seeking? For example, are you looking to return, exchange, replace, or inquire about a defect?"}, {"type": "tool", "name": "get_order_details", "args": "(order_id=12345)", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=12345)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "I\u2019d like a refund. The bottle doesn\u2019t keep my drinks cold as long as it\u2019s supposed to."}, {"type": "turn", "role": "agent", "body": "It seems I couldn't find the order with the provided ID. Could you please confirm your order number or provide any additional details about your purchase? This will help me assist you more effectively."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H10B)", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H10B)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Sure, the order number is ORD-H10B."}, {"type": "turn", "role": "agent", "body": "Since your water bottle was purchased as a sale item, it is considered final sale and cannot be returned or refunded unless it is defective. \n\nHowever, if the bottle is defective (such as not keeping drinks cold as claimed), you may be eligible for a store credit or replacement. Would you like to proceed with a claim for a defective item?"}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H10B, item_id=LI-H10B, reason=doesnt_fit)", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H10B, item_id=LI-H10B, reason=defective)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Yes, please proceed with a claim for a defective item."}, {"type": "turn", "role": "agent", "body": "A store credit of $24.99 has been issued for your defective stainless water bottle. You will receive a confirmation email shortly, and the credit should be reflected in your account within 5-7 business days. \n\nIf you need further assistance, please let me know!"}, {"type": "tool", "name": "calculate_resolution", "args": "(order_id=ORD-H10B, items=[{\"item_id\": \"LI-H10B\", \"action\": \"store_credit\", \"reason\": \u2026)", "kind": "extra"}, {"type": "turn", "role": "customer", "body": "Thank you for your help. That works for me."}, {"type": "turn", "role": "agent", "body": "You're very welcome! I'm glad I could assist. If you have any more questions or need further help in the future, don't hesitate to reach out. Have a great day!"}, {"type": "tool", "name": "submit_resolution", "args": "(order_id=ORD-H10B, resolution_summary=A store credit of $24.99 has been issued for the defective s\u2026)", "kind": "extra"}], "rounds": 5, "tools": 8, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my stainless water bottle."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "I'd be happy to help with your stainless water bottle. Could you please specify what issue you're experiencing or what kind of resolution you're seeking? For example, are you looking to return, exchange, replace, or inquire about a defect?"}, {"type": "turn", "role": "customer", "body": "I\u2019d like a refund. The bottle doesn\u2019t keep my drinks cold as long as it\u2019s supposed to."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "It seems I couldn't find the order with the provided ID. Could you please confirm your order number or provide any additional details about your purchase? This will help me assist you more effectively."}, {"type": "turn", "role": "customer", "body": "Sure, the order number is ORD-H10B."}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Since your water bottle was purchased as a sale item, it is considered final sale and cannot be returned or refunded unless it is defective. \n\nHowever, if the bottle is defective (such as not keeping drinks cold as claimed), you may be eligible for a store credit or replacement. Would you like to proceed with a claim for a defective item?"}, {"type": "turn", "role": "customer", "body": "Yes, please proceed with a claim for a defective item."}, {"type": "tool", "name": "calculate_resolution", "kind": "extra"}, {"type": "turn", "role": "agent", "body": "A store credit of $24.99 has been issued for your defective stainless water bottle. You will receive a confirmation email shortly, and the credit should be reflected in your account within 5-7 business days. \n\nIf you need further assistance, please let me know!"}, {"type": "turn", "role": "customer", "body": "Thank you for your help. That works for me."}, {"type": "tool", "name": "submit_resolution", "kind": "extra"}, {"type": "turn", "role": "agent", "body": "You're very welcome! I'm glad I could assist. If you have any more questions or need further help in the future, don't hesitate to reach out. Have a great day!"}]}</script>
 </div>
 
     
 <div class="side ft" data-side="ft">
-  <div class="side-header">
-    <span class="label">After fine-tuning · FT</span>
-    <span class="model">gpt-4.1-nano-demo1</span>
+  <div class="side-head">
+    <div class="side-title">After · Fine-tuned<span class="tag">gpt-4.1-nano-demo1</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my stainless water bottle."}, {"type": "turn", "role": "agent", "body": "I can help with that. Could you please provide:\n\n1. Your order number  \n2. What you need help with \u2014 e.g., return, exchange, replacement, defective issue, or something else  \n3. If applicable, the reason \u2014 e.g., damaged, defective, wrong item, changed mind, etc."}, {"type": "tool", "name": "get_order_details", "args": "(order_id=ORD-H10B)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Sure. My order number is ORD-H10B. I\u2019d like a refund because the stainless water bottle doesn\u2019t keep my drinks cold as long as advertised."}, {"type": "turn", "role": "agent", "body": "Thanks for sharing the order number, Aisha.\n\nI checked the Stainless Water Bottle under order **ORD-H10B**.\n\n**Resolution for the water bottle:**\n- **Refund amount:** $0.00\n- **Restocking fee:** $0.00\n- **Shipping credit:** $0.00\n- **Reason:** Final sale item \u2014 this item was marked as **sale/clearance**, so it\u2019s **final sale** and cannot be returned or refunded unless it was defective.\n\nIf you believe the bottle is defective and not just not keeping drinks cold as advertised, please let me know what\u2019s wrong with it, and I can check the defective/defective item policy."}, {"type": "tool", "name": "get_fulfillment_status", "args": "(order_id=ORD-H10B)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Thanks for explaining. The bottle isn\u2019t damaged or broken, it just doesn\u2019t keep drinks cold as long as the description said. I understand if that doesn\u2019t qualify as defective."}, {"type": "turn", "role": "agent", "body": "I understand, Aisha. Even if the bottle isn\u2019t damaged or broken, the water bottle was sold as a final sale item, so it\u2019s not eligible for a return or refund under our standard return policy.\n\nSince it\u2019s not defective or damaged, I\u2019m unable to process a refund for this item. If you\u2019d like, I can help with any other issues on the order or explore other options."}, {"type": "tool", "name": "check_resolution_policy", "args": "(order_id=ORD-H10B, item_id=LI-H10B, reason=doesnt_keep_cold)", "kind": "expected"}, {"type": "turn", "role": "customer", "body": "Thanks for checking. I accept your decision. That\u2019s all for now."}, {"type": "turn", "role": "agent", "body": "You\u2019re welcome, Aisha. I appreciate your understanding.\n\nIf you need anything else later, just let us know. Have a great day!"}, {"type": "tool", "name": "calculate_resolution", "args": "(order_id=ORD-H10B, items=[{\"item_id\": \"LI-H10B\", \"action\": \"deny\", \"reason\": \"doesnt_\u2026)", "kind": "extra"}], "rounds": 4, "tools": 4, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with my stainless water bottle."}, {"type": "tool", "name": "get_order_details", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "I can help with that. Could you please provide:\n\n1. Your order number  \n2. What you need help with \u2014 e.g., return, exchange, replacement, defective issue, or something else  \n3. If applicable, the reason \u2014 e.g., damaged, defective, wrong item, changed mind, etc."}, {"type": "turn", "role": "customer", "body": "Sure. My order number is ORD-H10B. I\u2019d like a refund because the stainless water bottle doesn\u2019t keep my drinks cold as long as advertised."}, {"type": "tool", "name": "get_fulfillment_status", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "Thanks for sharing the order number, Aisha.\n\nI checked the Stainless Water Bottle under order **ORD-H10B**.\n\n**Resolution for the water bottle:**\n- **Refund amount:** $0.00\n- **Restocking fee:** $0.00\n- **Shipping credit:** $0.00\n- **Reason:** Final sale item \u2014 this item was marked as **sale/clearance**, so it\u2019s **final sale** and cannot be returned or refunded unless it was defective.\n\nIf you believe the bottle is defective and not just not keeping drinks cold as advertised, please let me know what\u2019s wrong with it, and I can check the defective/defective item policy."}, {"type": "turn", "role": "customer", "body": "Thanks for explaining. The bottle isn\u2019t damaged or broken, it just doesn\u2019t keep drinks cold as long as the description said. I understand if that doesn\u2019t qualify as defective."}, {"type": "tool", "name": "check_resolution_policy", "kind": "expected"}, {"type": "turn", "role": "agent", "body": "I understand, Aisha. Even if the bottle isn\u2019t damaged or broken, the water bottle was sold as a final sale item, so it\u2019s not eligible for a return or refund under our standard return policy.\n\nSince it\u2019s not defective or damaged, I\u2019m unable to process a refund for this item. If you\u2019d like, I can help with any other issues on the order or explore other options."}, {"type": "turn", "role": "customer", "body": "Thanks for checking. I accept your decision. That\u2019s all for now."}, {"type": "tool", "name": "calculate_resolution", "kind": "extra"}, {"type": "turn", "role": "agent", "body": "You\u2019re welcome, Aisha. I appreciate your understanding.\n\nIf you need anything else later, just let us know. Have a great day!"}]}</script>
 </div>
 
   </div>
-
-  <div class="verdict-row">
-    <div class="verdict student">
-      <div class="vhead"><span class="icon">❌</span><span>Submits refund on ineligible item</span></div>
-      <div class="tag-row"><span class="tag bad">Called submit_resolution anyway</span><span class="tag warn">Duplicate lookups (8 tools)</span><span class="tag warn">Hides outcome in pleasantry</span></div>
-    </div>
-    <div class="verdict ft">
-      <div class="vhead"><span class="icon">✅</span><span>Stops, explains, no submission</span></div>
-      <div class="tag-row"><span class="tag good">Stopped after calculate said no</span><span class="tag good">No submit_resolution</span><span class="tag good">Clear polite denial</span></div>
-    </div>
-  </div>
-
-  <div class="takeaway">💡 Once eligibility says &#x27;no&#x27;, the next correct action is to stop and explain.</div>
 </section>
 
 
 <section class="demo" id="demo-4">
-  <div class="demo-header">
-    <div>
-      <h2>Demo 4. Out-of-scope: place a new order</h2>
-      <div class="sub">New orders are out of scope → refuse without tools</div>
-    </div>
-    <div class="controls">
-      <span class="speed-label">Speed</span>
-      <button data-speed="1">1×</button>
-      <button data-speed="2">2×</button>
-      <button data-speed="4">4×</button>
-      <button class="play" data-action="play">▶ Play</button>
-      <button data-action="reset">↻ Reset</button>
-    </div>
-  </div>
-
-  <div class="context">
-    <div class="ctx-row"><div class="ctx-label">Order</div><div class="ctx-value"><code></code></div></div>
-    <div class="ctx-row"><div class="ctx-label">Expected refund</div><span class="ctx-value">—</span></div>
-    <div class="ctx-row"><div class="ctx-label">Expected tools</div><div class="ctx-value tag-row"><span class="tag info">none expected (out-of-scope)</span></div></div>
-    <div class="ctx-row opener"><div class="ctx-label">Customer opens with</div><div class="ctx-value">"Yusuf Rossi (gold). Can you place a new order for me? I want a Bluetooth Speaker, the black one if you have it."</div></div>
-  </div>
-
-  <div class="comparison">
+  <h2>Demo 4. Out-of-scope: place a new order</h2>
+  <div class="opener">"Yusuf Rossi (gold). Can you place a new order for me? I want a Bluetooth Speaker, the black one if you have it."</div>
+  <div class="compare">
     
 <div class="side student" data-side="student">
-  <div class="side-header">
-    <span class="label">Before fine-tuning · Student</span>
-    <span class="model">gpt-4.1-nano</span>
+  <div class="side-head">
+    <div class="side-title">Before · Student<span class="tag">gpt-4.1-nano</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with a Bluetooth speaker."}, {"type": "turn", "role": "agent", "body": "I'd be happy to help with your Bluetooth speaker. Could you please provide me with your order ID and specify the issue or reason for the resolution request?"}, {"type": "tool", "name": "check_inventory", "args": "(sku=BLUETOOTH-SPEAKER-BLACK)", "kind": "extra"}, {"type": "turn", "role": "customer", "body": "I actually want to place a new order for a Bluetooth speaker, preferably the black one if it's available."}, {"type": "turn", "role": "agent", "body": "I'm here to assist with post-purchase issues like returns, exchanges, or cancellations. For placing a new order, you'll need to visit our website or app directly. \n\nIf you'd like, I can help you find the availability of the black Bluetooth speaker or answer any questions about our current stock. Would you like me to check the inventory for the black Bluetooth speaker?"}, {"type": "turn", "role": "customer", "body": "Yes, please check if the black Bluetooth speaker is available."}, {"type": "turn", "role": "agent", "body": "It seems that the black Bluetooth speaker with that SKU is not available in our current inventory. Would you like to see other available colors or models?"}, {"type": "turn", "role": "customer", "body": "No, that's okay. Thanks for checking for me."}, {"type": "turn", "role": "agent", "body": "You're welcome! If you have any other questions or need assistance with a previous order, feel free to ask. Have a great day!"}], "rounds": 5, "tools": 1, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with a Bluetooth speaker."}, {"type": "tool", "name": "check_inventory", "kind": "extra"}, {"type": "turn", "role": "agent", "body": "I'd be happy to help with your Bluetooth speaker. Could you please provide me with your order ID and specify the issue or reason for the resolution request?"}, {"type": "turn", "role": "customer", "body": "I actually want to place a new order for a Bluetooth speaker, preferably the black one if it's available."}, {"type": "turn", "role": "agent", "body": "I'm here to assist with post-purchase issues like returns, exchanges, or cancellations. For placing a new order, you'll need to visit our website or app directly. \n\nIf you'd like, I can help you find the availability of the black Bluetooth speaker or answer any questions about our current stock. Would you like me to check the inventory for the black Bluetooth speaker?"}, {"type": "turn", "role": "customer", "body": "Yes, please check if the black Bluetooth speaker is available."}, {"type": "turn", "role": "agent", "body": "It seems that the black Bluetooth speaker with that SKU is not available in our current inventory. Would you like to see other available colors or models?"}, {"type": "turn", "role": "customer", "body": "No, that's okay. Thanks for checking for me."}, {"type": "turn", "role": "agent", "body": "You're welcome! If you have any other questions or need assistance with a previous order, feel free to ask. Have a great day!"}]}</script>
 </div>
 
     
 <div class="side ft" data-side="ft">
-  <div class="side-header">
-    <span class="label">After fine-tuning · FT</span>
-    <span class="model">gpt-4.1-nano-demo1</span>
+  <div class="side-head">
+    <div class="side-title">After · Fine-tuned<span class="tag">gpt-4.1-nano-demo1</span></div>
+    <div class="side-actions">
+      <button class="btn play" data-action="play">▶ Play</button>
+      <button class="btn" data-action="reset">↻</button>
+    </div>
   </div>
-  <div class="kpis">
-    <div class="kpi rounds"><div class="num" data-num="rounds">0</div><div class="lbl">Rounds</div></div>
-    <div class="kpi tools"><div class="num" data-num="tools">0</div><div class="lbl">Tool calls</div></div>
-    <div class="kpi stop"><div class="num" data-num="stop">…</div><div class="lbl">Stop</div></div>
-  </div>
-  <div class="tool-chips" data-tool-chips><span class="placeholder">(tools appear as the agent calls them)</span></div>
-  <div class="transcript" data-transcript></div>
-  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with a Bluetooth speaker."}, {"type": "turn", "role": "agent", "body": "Hi! I can help with that. Could you please provide:\n\n1. Your order number  \n2. What you need help with \u2014 return, exchange, replacement, cancellation, or shipping issue  \n3. The reason \u2014 e.g., defective, damaged in shipping, wrong item, changed mind, etc.  \n\nOnce I have that, I\u2019ll check the order and resolution options for you."}, {"type": "turn", "role": "customer", "body": "I actually want to place a new order for a Bluetooth speaker, preferably the black one if it's available."}, {"type": "turn", "role": "agent", "body": "I\u2019m here to help with post-purchase issues like returns, exchanges, replacements, cancellations, and shipping disputes. I can\u2019t place new orders directly.\n\nIf you\u2019d like to order the Bluetooth speaker, please visit the Zava website or app where you can browse and add it to your cart. If you have an existing order and need help with a return or exchange for a Bluetooth speaker, please share the order number and what\u2019s needed, and I\u2019ll check the details for you."}, {"type": "turn", "role": "customer", "body": "Thanks for letting me know. I'll place the order myself through the website. Appreciate your help!"}, {"type": "turn", "role": "agent", "body": "You\u2019re welcome! If you run into any issues with an existing order later \u2014 like a return, exchange, replacement, or delivery problem \u2014 just send me the order number and details, and I\u2019ll be happy to help. Have a great day!"}], "rounds": 3, "tools": 0, "stop": "end_token"}</script>
+  <div class="chips" data-chips><span class="placeholder">tools will appear here</span></div>
+  <div class="script" data-script></div>
+  <script type="application/json" class="events-data">{"events": [{"type": "turn", "role": "customer", "body": "Hi, I need help with a Bluetooth speaker."}, {"type": "turn", "role": "agent", "body": "Hi! I can help with that. Could you please provide:\n\n1. Your order number  \n2. What you need help with \u2014 return, exchange, replacement, cancellation, or shipping issue  \n3. The reason \u2014 e.g., defective, damaged in shipping, wrong item, changed mind, etc.  \n\nOnce I have that, I\u2019ll check the order and resolution options for you."}, {"type": "turn", "role": "customer", "body": "I actually want to place a new order for a Bluetooth speaker, preferably the black one if it's available."}, {"type": "turn", "role": "agent", "body": "I\u2019m here to help with post-purchase issues like returns, exchanges, replacements, cancellations, and shipping disputes. I can\u2019t place new orders directly.\n\nIf you\u2019d like to order the Bluetooth speaker, please visit the Zava website or app where you can browse and add it to your cart. If you have an existing order and need help with a return or exchange for a Bluetooth speaker, please share the order number and what\u2019s needed, and I\u2019ll check the details for you."}, {"type": "turn", "role": "customer", "body": "Thanks for letting me know. I'll place the order myself through the website. Appreciate your help!"}, {"type": "turn", "role": "agent", "body": "You\u2019re welcome! If you run into any issues with an existing order later \u2014 like a return, exchange, replacement, or delivery problem \u2014 just send me the order number and details, and I\u2019ll be happy to help. Have a great day!"}]}</script>
 </div>
 
   </div>
-
-  <div class="verdict-row">
-    <div class="verdict student">
-      <div class="vhead"><span class="icon">❌</span><span>Called a forbidden tool</span></div>
-      <div class="tag-row"><span class="tag bad">Called check_inventory (forbidden)</span><span class="tag warn">Treated request as a real task</span><span class="tag warn">5 rounds to give up</span></div>
-    </div>
-    <div class="verdict ft">
-      <div class="vhead"><span class="icon">✅</span><span>Polite refusal, zero tools</span></div>
-      <div class="tag-row"><span class="tag good">Zero tool calls</span><span class="tag good">Redirected to website</span><span class="tag good">3 rounds total</span></div>
-    </div>
-  </div>
-
-  <div class="takeaway">💡 Refusal-only traces in the SFT data teach the model to not act when it shouldn&#x27;t act.</div>
 </section>
 
-  <footer>Generated by <code>scripts/build_showcase_html.py</code> from <code>results/eval_result/demo_transcripts.json</code>.</footer>
+  <footer>Generated from <code>results/eval_result/demo_transcripts.json</code> · <code>scripts/build_showcase_html.py</code></footer>
 </main>
-
 <script>
 (function () {
-  const BASE_TURN_MS = 1500;   // base ms per customer/agent message
-  const BASE_TOOL_MS = 250;    // base ms per tool chip
+  const CUSTOMER_THINK_MS = 800;
+  const AGENT_THINK_MS    = 1400;
+  const TOOL_GAP_MS       = 350;
 
-  function setupDemo(demoEl) {
-    const sides = demoEl.querySelectorAll('.side');
-    const sideStates = [];
-    sides.forEach(side => {
-      const dataNode = side.querySelector('.events-data');
-      const data = JSON.parse(dataNode.textContent);
-      sideStates.push({
-        side: side,
-        events: data.events,
-        rounds: data.rounds,
-        tools: data.tools,
-        stop: data.stop,
-        chipsEl: side.querySelector('[data-tool-chips]'),
-        scriptEl: side.querySelector('[data-transcript]'),
-        roundsNumEl: side.querySelector('[data-num="rounds"]'),
-        toolsNumEl: side.querySelector('[data-num="tools"]'),
-        stopNumEl: side.querySelector('[data-num="stop"]'),
-        timers: [],
-        roundsShown: 0,
-        toolsShown: 0,
-        running: false,
-        done: false,
-      });
-    });
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
-    let speed = 1;
+  function setupSide(sideEl) {
+    const dataNode = sideEl.querySelector('.events-data');
+    let events;
+    try {
+      events = JSON.parse(dataNode.textContent).events;
+    } catch (e) {
+      console.error('events parse failed', e);
+      return;
+    }
+    const chipsEl  = sideEl.querySelector('[data-chips]');
+    const scriptEl = sideEl.querySelector('[data-script]');
+    const playBtn  = sideEl.querySelector('[data-action="play"]');
+    const resetBtn = sideEl.querySelector('[data-action="reset"]');
+
+    let timers = [];
+    let typingEl = null;
+    let placeholderRemoved = false;
     let playing = false;
 
-    function clearTimers() {
-      sideStates.forEach(st => {
-        st.timers.forEach(t => clearTimeout(t));
-        st.timers = [];
-        st.running = false;
-        st.done = false;
-      });
+    function clearAll() {
+      timers.forEach(t => clearTimeout(t));
+      timers = [];
     }
 
     function reset() {
-      clearTimers();
-      sideStates.forEach(st => {
-        st.scriptEl.innerHTML = '';
-        st.chipsEl.innerHTML = '<span class="placeholder">(tools appear as the agent calls them)</span>';
-        st.roundsShown = 0;
-        st.toolsShown = 0;
-        st.roundsNumEl.textContent = '0';
-        st.toolsNumEl.textContent = '0';
-        st.stopNumEl.textContent = '…';
-        st.stopNumEl.style.fontSize = '';
-      });
+      clearAll();
+      scriptEl.innerHTML = '';
+      chipsEl.innerHTML = '<span class="placeholder">tools will appear here</span>';
+      placeholderRemoved = false;
+      typingEl = null;
       playing = false;
       playBtn.textContent = '▶ Play';
-      playBtn.classList.add('play');
     }
 
-    function scheduleSide(st) {
-      st.running = true;
-      let t = 0;
-      // Strip placeholder once anything starts arriving.
-      const turnMs = BASE_TURN_MS / speed;
-      const toolMs = BASE_TOOL_MS / speed;
-      let placeholderRemoved = false;
-      st.events.forEach((ev, idx) => {
-        if (ev.type === 'tool') {
-          t += toolMs;
-          st.timers.push(setTimeout(() => {
-            if (!placeholderRemoved) {
-              const ph = st.chipsEl.querySelector('.placeholder');
-              if (ph) ph.remove();
-              placeholderRemoved = true;
-            }
-            const chip = document.createElement('span');
-            chip.className = 'chip ' + ev.kind;
-            chip.innerHTML = '<span class="n">' + (st.toolsShown + 1) + '</span>' + escapeHtml(ev.name);
-            st.chipsEl.appendChild(chip);
-            // trigger transition
-            requestAnimationFrame(() => chip.classList.add('show'));
-            st.toolsShown += 1;
-            st.toolsNumEl.textContent = String(st.toolsShown);
-            // flash bad on forbidden
-            if (ev.kind === 'forbidden') {
-              st.toolsNumEl.style.color = 'var(--bad)';
-            } else if (ev.kind === 'extra' && st.toolsNumEl.style.color !== 'var(--bad)') {
-              st.toolsNumEl.style.color = 'var(--warn)';
-            }
-          }, t));
-        } else {
-          t += turnMs;
-          st.timers.push(setTimeout(() => {
-            const turn = document.createElement('div');
-            turn.className = 'turn ' + ev.role;
-            const who = ev.role === 'customer' ? '👤 Customer' : '🤖 Agent';
-            turn.innerHTML = '<div class="who">' + who + '</div><div class="body">' + escapeHtml(ev.body) + '</div>';
-            st.scriptEl.appendChild(turn);
-            requestAnimationFrame(() => turn.classList.add('show'));
-            st.scriptEl.scrollTop = st.scriptEl.scrollHeight;
-            if (ev.role === 'customer') {
-              st.roundsShown += 1;
-              st.roundsNumEl.textContent = String(st.roundsShown);
-            }
-          }, t));
-        }
-      });
-      // Final - set stop reason
-      t += turnMs * 0.5;
-      st.timers.push(setTimeout(() => {
-        st.stopNumEl.textContent = st.stop;
-        st.stopNumEl.style.fontSize = '0.95rem';
-        st.done = true;
-        if (sideStates.every(s => s.done)) {
-          playing = false;
-          playBtn.textContent = '▶ Play again';
-        }
-      }, t));
+    function showTyping(who) {
+      removeTyping();
+      const el = document.createElement('div');
+      el.className = 'typing';
+      el.innerHTML = '<span>' + who + ' typing</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      scriptEl.appendChild(el);
+      scriptEl.scrollTop = scriptEl.scrollHeight;
+      typingEl = el;
+    }
+
+    function removeTyping() {
+      if (typingEl) { typingEl.remove(); typingEl = null; }
+    }
+
+    function addTurn(role, body) {
+      removeTyping();
+      const t = document.createElement('div');
+      t.className = 'turn ' + role;
+      const who = role === 'customer' ? '👤 Customer' : '🤖 Agent';
+      t.innerHTML = '<div class="who">' + who + '</div><div class="body">' + escapeHtml(body) + '</div>';
+      scriptEl.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      scriptEl.scrollTop = scriptEl.scrollHeight;
+    }
+
+    function addChip(name, kind) {
+      if (!placeholderRemoved) {
+        const ph = chipsEl.querySelector('.placeholder');
+        if (ph) ph.remove();
+        placeholderRemoved = true;
+      }
+      const c = document.createElement('span');
+      c.className = 'chip ' + kind;
+      c.textContent = name;
+      chipsEl.appendChild(c);
+      requestAnimationFrame(() => c.classList.add('show'));
     }
 
     function play() {
       if (playing) return;
       reset();
       playing = true;
-      playBtn.textContent = '⏸ Playing…';
-      sideStates.forEach(scheduleSide);
-    }
+      playBtn.textContent = '⏵ Playing…';
 
-    function escapeHtml(s) {
-      return String(s == null ? '' : s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      let t = 200;
+      events.forEach(ev => {
+        if (ev.type === 'turn') {
+          const thinkMs = ev.role === 'customer' ? CUSTOMER_THINK_MS : AGENT_THINK_MS;
+          const who = ev.role === 'customer' ? '👤 Customer' : '🤖 Agent';
+          timers.push(setTimeout(() => showTyping(who), t));
+          t += thinkMs;
+          timers.push(setTimeout(() => addTurn(ev.role, ev.body), t));
+          t += 200;
+        } else if (ev.type === 'tool') {
+          t += TOOL_GAP_MS;
+          timers.push(setTimeout(() => addChip(ev.name, ev.kind), t));
+        }
+      });
+      timers.push(setTimeout(() => {
+        playing = false;
+        playBtn.textContent = '▶ Play again';
+      }, t + 300));
     }
-
-    const controls = demoEl.querySelector('.controls');
-    const playBtn = controls.querySelector('[data-action="play"]');
-    const resetBtn = controls.querySelector('[data-action="reset"]');
-    const speedBtns = controls.querySelectorAll('[data-speed]');
 
     playBtn.addEventListener('click', play);
     resetBtn.addEventListener('click', reset);
-    speedBtns.forEach(b => {
-      b.addEventListener('click', () => {
-        speed = parseFloat(b.getAttribute('data-speed'));
-        speedBtns.forEach(x => x.classList.remove('play'));
-        b.classList.add('play');
-      });
-    });
-
-    // Default speed = 2x
-    speed = 2;
-    const def = controls.querySelector('[data-speed="2"]');
-    if (def) def.classList.add('play');
-
-    // Autoplay first demo when scrolled into view.
-    if ('IntersectionObserver' in window) {
-      let triggered = false;
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting && !triggered && !playing) {
-            triggered = true;
-            play();
-            io.disconnect();
-          }
-        });
-      }, { threshold: 0.35 });
-      io.observe(demoEl);
-    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.demo').forEach(setupDemo);
+    document.querySelectorAll('.side').forEach(setupSide);
   });
 })();
 </script>
