@@ -196,51 +196,28 @@ wrap_field("expected",  ex['expected_resolution_summary'])
 # =====================================================================
 # 3. Scoring
 # =====================================================================
-CELLS.append(md("""## 3. How a scenario is scored — live, against the hosted teacher
+CELLS.append(md("""## 3. A live customer ↔ teacher conversation
 
-This is a **live** end-to-end demo. The cell:
+The cell below drives a fresh conversation against the **deployed Foundry teacher agent** (`retail-agent-langgraph` wrapping `gpt-5.5`) — every customer turn and every teacher reply prints as it arrives.
 
-1. Drives a fresh customer ↔ teacher conversation against the **deployed Foundry agent** (`retail-agent-langgraph` wrapping `gpt-5.5`) — every customer turn and every teacher reply prints as it arrives.
-2. Polls App Insights for the teacher's tool spans (a real-world ingestion delay you have to wait for once per conversation).
-3. Runs the four dimension scorers from `eval/evaluate_v2.py` one at a time, printing the **expected vs. actual tools** for steps 1 and 2 so the grading is auditable.
+Scenario: `H059: counter_factual_claims` — the customer falsely claims gold tier and asks for a refund. The teacher must *not* trust that claim and must apply the standard-tier 15% restocking fee.
 
-Scoring dimensions (same calibration as everywhere else in this notebook):
-
-| Dimension | Weight | What it checks |
-|---|---:|---|
-| **Decision correctness** | 35% | Right action and reason per line item, no over-resolution |
-| **Tool trajectory**      | 25% | Right tools in the right order; no forbidden tools |
-| **Financial accuracy**   | 20% | Refund / restocking amounts within tolerance |
-| **Communication**        | 20% | Specific amounts, per-item summary, policy keywords |
-
-The chosen scenario is `H059: counter_factual_claims` — the customer falsely claims gold tier and asks for a refund. The teacher must *not* trust the tier claim and must apply the standard-tier 15% restocking fee.
-
-> Requires Azure auth (`azd auth login` or `az login`) and the `.env` values for `AZURE_OPENAI_API_KEY` / `OPENAI_BASE_URL`. Expect ~30–60 s for the conversation plus a one-time App Insights ingestion wait (~30–90 s).
+> Requires Azure auth (`azd auth login` or `az login`) and the `.env` values for `AZURE_OPENAI_API_KEY` / `OPENAI_BASE_URL`. Expect ~30–60 s for the conversation.
 """))
 
 CELLS.append(code("""import importlib
 import sys
 import time
 
-sys.path.insert(0, str(EVAL_DIR))
 sys.path.insert(0, str(NB_DIR / "scripts"))
 
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 
-import evaluate_v2 as _ev2
-import appinsights_tools as _ai
 import run_baselines_hosted as _rbh
-_ev2 = importlib.reload(_ev2)
-_ai  = importlib.reload(_ai)
 _rbh = importlib.reload(_rbh)
-from evaluate_v2 import (
-    score_decision_correctness, score_tool_usage,
-    score_financial_accuracy, score_communication,
-    _extract_actions_v2, _normalize_tool_calls,
-)
 
-# ── Scenario ──
+# ── Scenario (shared with the next cell's cached scoring) ──
 SHOWCASE_NAME = "H059: counter_factual_claims"
 scenario = next(s for s in train_scenarios if s["name"] == SHOWCASE_NAME)
 HOSTED_AGENT_NAME = os.environ.get("HOSTED_AGENT_NAME", "demo1-retail-agent-langraph-responses")
@@ -251,10 +228,7 @@ wrap_field("scenario", '"' + scenario['user_message'] + '"')
 wrap_field("note",     "⚠️  Customer falsely claims 'gold tier' — the teacher must NOT trust this.")
 wrap_field("expected", scenario['expected_resolution_summary'])
 
-# ──────────────────────────────────────────────────────────────────────
-#  PHASE 1 — drive the conversation live
-# ──────────────────────────────────────────────────────────────────────
-section("Phase 1 — customer ↔ teacher conversation  (LIVE)")
+section("Customer ↔ teacher conversation  (LIVE)")
 pc = AIProjectClient(endpoint=_rbh.PROJECT_ENDPOINT,
                      credential=DefaultAzureCredential(),
                      allow_preview=True)
@@ -262,16 +236,12 @@ agent_client = pc.get_openai_client(agent_name=HOSTED_AGENT_NAME)
 
 DEMO_MAX_ROUNDS = 5
 transcript: list[dict] = []
-response_ids: list[str] = []
 previous_id = None
 
 for r in range(1, DEMO_MAX_ROUNDS + 1):
-    # Customer simulator
     cust = _rbh._customer_reply(transcript, scenario["user_message"])
     ended = "[END]" in cust
     cust = cust.replace("[END]", "").strip()
-    if not cust and ended:
-        break
     if not cust:
         break
     transcript.append({"role": "customer", "content": cust})
@@ -280,7 +250,6 @@ for r in range(1, DEMO_MAX_ROUNDS + 1):
     for line in textwrap.wrap(cust, width=88) or [""]:
         print(f"      {line}")
 
-    # Teacher (hosted Foundry agent)
     kw = {"input": cust}
     if previous_id:
         kw["previous_response_id"] = previous_id
@@ -293,10 +262,9 @@ for r in range(1, DEMO_MAX_ROUNDS + 1):
         raise
     dt = time.perf_counter() - t0
     previous_id = resp.id
-    response_ids.append(resp.id)
     agent_text = (resp.output_text or "").strip()
     transcript.append({"role": "agent", "content": agent_text})
-    print(f"  ←  {dt:.1f}s, response_id={resp.id[-12:]}")
+    print(f"  ←  {dt:.1f}s")
     for raw in agent_text.splitlines():
         for line in textwrap.wrap(raw, width=88) or [""]:
             print(f"      {line}")
@@ -304,42 +272,68 @@ for r in range(1, DEMO_MAX_ROUNDS + 1):
         break
 
 print()
-print(f"   ── conversation done: {len(transcript)//2} rounds, "
-      f"{len(response_ids)} teacher response(s) ──")
+print(f"   ── conversation done: {len(transcript)//2} round(s) ──")
+print(f"   ▶ next cell scores the same scenario from the cached teacher eval")
+print(f"     (skips the ~30–90 s App Insights ingestion wait for tool traces)")
+"""))
 
-# ──────────────────────────────────────────────────────────────────────
-#  PHASE 2 — fetch tool traces from App Insights (poll until ingested)
-# ──────────────────────────────────────────────────────────────────────
-section("Phase 2 — fetching tool traces from App Insights")
-print(f"   polling for {len(response_ids)} response_id(s) (ingestion delay ~30–90 s)…")
-deadline = time.time() + 180
-attempt = 0
-rid_to_calls: dict = {}
-while time.time() < deadline:
-    attempt += 1
-    rid_to_calls = _rbh.batch_fetch_tool_calls(response_ids, wait_sec=0)
-    n_with = sum(1 for v in rid_to_calls.values() if v)
-    if n_with == len(response_ids):
-        print(f"   attempt {attempt}: ✅  all {n_with}/{len(response_ids)} have tool spans")
-        break
-    print(f"   attempt {attempt}: {n_with}/{len(response_ids)} ready, waiting 10s…")
-    time.sleep(10)
+# =====================================================================
+# 3b. Step-by-step scoring (cached, same scenario)
+# =====================================================================
+CELLS.append(md("""## 3b. How that conversation is scored
 
-tool_calls: list[dict] = []
-for rid in response_ids:
-    tool_calls.extend(rid_to_calls.get(rid, []))
+The previous cell ran a live conversation. Scoring requires the **tool traces**, which
+arrive in App Insights after a 30–90 s ingestion delay. To keep the demo flowing, this
+cell loads the **same scenario's** cached teacher run (`H059` from
+`results/eval_result/train/...teacher...v2.pass1.json`) and walks through scoring
+**dimension by dimension**, printing expected vs. actual tools so the grading is auditable.
 
-# ──────────────────────────────────────────────────────────────────────
-#  PHASE 3 — step-by-step scoring
-# ──────────────────────────────────────────────────────────────────────
-final_text = next((t["content"] for t in reversed(transcript) if t["role"] == "agent"), "")
-result = {"response": final_text, "messages": transcript, "tool_calls": tool_calls}
+Scoring dimensions (calibrated, same as the rest of the notebook):
+
+| Dimension | Weight | What it checks |
+|---|---:|---|
+| **Decision correctness** | 35% | Right action and reason per line item, no over-resolution |
+| **Tool trajectory**      | 25% | Right tools in the right order; no forbidden tools |
+| **Financial accuracy**   | 20% | Refund / restocking amounts within tolerance |
+| **Communication**        | 20% | Specific amounts, per-item summary, policy keywords |
+
+Pass bar: combined ≥ **0.70**.
+"""))
+
+CELLS.append(code("""import sys
+sys.path.insert(0, str(EVAL_DIR))
+from evaluate_v2 import (  # noqa: E402
+    score_decision_correctness, score_tool_usage,
+    score_financial_accuracy, score_communication,
+    _extract_actions_v2, _normalize_tool_calls,
+)
+
+# ── Load cached teacher run for the SAME scenario (H059) ──
+TEACHER_CACHE = RESULTS_DIR / "train" / (
+    "baseline__mt__teacher__demo1-retail-agent-langraph-responses.v2.pass1.json"
+)
+cache = json.loads(TEACHER_CACHE.read_text(encoding="utf-8"))
+per_scenario = next(ps for ps in cache["per_scenario"]
+                    if ps["scenario_name"] == SHOWCASE_NAME)
+final_text = next(
+    (t["content"] for t in reversed(per_scenario["transcript"]) if t["role"] == "agent"),
+    "",
+)
+result = {
+    "response":   final_text,
+    "messages":   per_scenario["transcript"],
+    "tool_calls": per_scenario["tool_calls"],
+}
+tool_calls = per_scenario["tool_calls"]
+
+banner(f"CACHED SCORING — {SHOWCASE_NAME}",
+       f"source: train / teacher / pass^1   ·   {len(tool_calls)} tool calls")
 
 def _bar(score: float, n: int = 30) -> str:
     fill = int(round(score * n))
     return "█" * fill + "░" * (n - fill)
 
-section("Phase 3 — scoring, dimension by dimension")
+section("Scoring, dimension by dimension")
 contributions: list[tuple[str, float, float]] = []
 
 # ── Step 1: Decision correctness ──
@@ -349,7 +343,7 @@ print("       checks: right action + reason per line item, no over-resolution")
 expected_actions = scenario.get("expected_actions", {})
 print("       expected per-item actions:")
 for k, exp in expected_actions.items():
-    print(f"         · {k:<12}  action={exp.get('action')!r:<14} reason={exp.get('reason')!r}")
+    print(f"         · {k:<20}  action={exp.get('action')!r:<20} reason={exp.get('reason')!r}")
 actual_actions = _extract_actions_v2(_normalize_tool_calls(tool_calls))
 print("       actual per-item actions extracted from tool calls:")
 if actual_actions:
@@ -358,7 +352,7 @@ if actual_actions:
         exp_r = (expected_actions.get(k) or {}).get("reason")
         mark_a = "✅" if exp_a == act.get("action") else "⚠️"
         mark_r = "✅" if (exp_r is None or exp_r == act.get("reason")) else "⚠️"
-        print(f"         {mark_a} action  {act.get('action')!r:<14}"
+        print(f"         · {k:<20}  {mark_a} action  {act.get('action')!r:<20}"
               f"   {mark_r} reason  {act.get('reason')!r}")
 else:
     print("         (none extracted)")
