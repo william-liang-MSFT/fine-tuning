@@ -25,6 +25,23 @@ HEADLINES = [
 ]
 
 
+DESCRIPTIONS = [
+    "Diego argues that not liking the keys is \u201cbasically a defect\u201d and shouldn\u2019t owe a 15% fee. "
+    "Standard-tier non-defective electronics owe 15% \u2014 the correct refund is $110.49 on a $129.99 keyboard.",
+
+    "Liam wants to cancel an unshipped order with two items. Both are still processing, so the correct "
+    "outcome is a full $164.98 refund (no fees) and a confirmation ID.",
+
+    "Aisha\u2019s water bottle is a sale item and her complaint is \u201cdoesn\u2019t keep drinks cold as long as advertised\u201d "
+    "\u2014 performance dissatisfaction, not a manufacturing defect. Sale-final items are non-returnable except "
+    "for defects, so the correct answer is deny.",
+
+    "Yusuf asks to place a new order for a Bluetooth Speaker. The agent\u2019s scope is post-purchase support "
+    "(returns, exchanges, replacements) \u2014 placing new orders is out of scope, and the correct behavior is "
+    "to refuse and redirect without calling any tool.",
+]
+
+
 CSS = r"""
 :root {
   --bg: #fafaf7;
@@ -132,30 +149,18 @@ body {
   color: var(--ink);
 }
 
-.expected {
-  max-width: 860px;
+.scenario {
+  max-width: 1520px;
+  width: 100%;
   margin: 0 auto;
-  padding: 14px 20px;
-  background: #fff;
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  text-align: left;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  column-gap: 18px;
-  align-items: baseline;
-}
-.expected .label {
-  font-size: 0.66rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--ink-mute);
-}
-.expected .text {
-  font-size: 1rem;
-  line-height: 1.55;
+  padding: 0 12px;
+  font-family: "Cormorant Garamond", "EB Garamond", Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  line-height: 1.5;
+  font-weight: 400;
   color: var(--ink);
+  text-align: center;
+  letter-spacing: -0.005em;
 }
 
 /* ── compare grid ──────────────────────────────────────── */
@@ -417,17 +422,14 @@ def _render_slide(demo: dict, idx: int, total: int, models: dict) -> str:
     s_events = _build_timeline(demo.get("student", {}), expected, forbidden)
     f_events = _build_timeline(demo.get("ft", {}), expected, forbidden)
     headline = HEADLINES[idx - 1] if idx - 1 < len(HEADLINES) else demo.get("headline", "")
-    expected_text = sc.get("expected_resolution_summary", "") or ""
+    desc = DESCRIPTIONS[idx - 1] if idx - 1 < len(DESCRIPTIONS) else ""
     return f"""
 <section class="slide" id="slide-{idx}" data-slide="{idx}">
   <div class="intro">
     <div class="eyebrow">Demo {idx} of {total}</div>
     <h1>{_esc(headline)}</h1>
   </div>
-  <div class="expected">
-    <span class="label">Expected</span>
-    <span class="text">{_esc(expected_text)}</span>
-  </div>
+  <div class="scenario">{_esc(desc)}</div>
   <div class="compare">
     {_render_side("Before", models['student_model'], "before", s_events)}
     <div class="divider"></div>

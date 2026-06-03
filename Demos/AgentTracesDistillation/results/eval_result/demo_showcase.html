@@ -114,30 +114,18 @@ body {
   color: var(--ink);
 }
 
-.expected {
-  max-width: 860px;
+.scenario {
+  max-width: 1520px;
+  width: 100%;
   margin: 0 auto;
-  padding: 14px 20px;
-  background: #fff;
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  text-align: left;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  column-gap: 18px;
-  align-items: baseline;
-}
-.expected .label {
-  font-size: 0.66rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--ink-mute);
-}
-.expected .text {
-  font-size: 1rem;
-  line-height: 1.55;
+  padding: 0 12px;
+  font-family: "Cormorant Garamond", "EB Garamond", Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  line-height: 1.5;
+  font-weight: 400;
   color: var(--ink);
+  text-align: center;
+  letter-spacing: -0.005em;
 }
 
 /* ── compare grid ──────────────────────────────────────── */
@@ -348,10 +336,7 @@ body {
     <div class="eyebrow">Demo 1 of 4</div>
     <h1>Restocking-fee math</h1>
   </div>
-  <div class="expected">
-    <span class="label">Expected</span>
-    <span class="text">Customer preference is NOT a defect. Standard electronics non-defective = 15% restocking. Refund $110.49. Agent must apply the fee despite customer&#x27;s argument.</span>
-  </div>
+  <div class="scenario">Diego argues that not liking the keys is “basically a defect” and shouldn’t owe a 15% fee. Standard-tier non-defective electronics owe 15% — the correct refund is $110.49 on a $129.99 keyboard.</div>
   <div class="compare">
     
     <div class="side before" data-side="before">
@@ -395,10 +380,7 @@ body {
     <div class="eyebrow">Demo 2 of 4</div>
     <h1>Multi-item cart cancel</h1>
   </div>
-  <div class="expected">
-    <span class="label">Expected</span>
-    <span class="text">Both items still processing — eligible for cancellation. Full refund both items, no fees. LI-H03A $129.99 + LI-H03B $34.99 = $164.98.</span>
-  </div>
+  <div class="scenario">Liam wants to cancel an unshipped order with two items. Both are still processing, so the correct outcome is a full $164.98 refund (no fees) and a confirmation ID.</div>
   <div class="compare">
     
     <div class="side before" data-side="before">
@@ -442,10 +424,7 @@ body {
     <div class="eyebrow">Demo 3 of 4</div>
     <h1>Sale item, no defect — should deny</h1>
   </div>
-  <div class="expected">
-    <span class="label">Expected</span>
-    <span class="text">Sale item, non-defective complaint (performance dissatisfaction is not a manufacturing defect). DENY per sale policy.</span>
-  </div>
+  <div class="scenario">Aisha’s water bottle is a sale item and her complaint is “doesn’t keep drinks cold as long as advertised” — performance dissatisfaction, not a manufacturing defect. Sale-final items are non-returnable except for defects, so the correct answer is deny.</div>
   <div class="compare">
     
     <div class="side before" data-side="before">
@@ -489,10 +468,7 @@ body {
     <div class="eyebrow">Demo 4 of 4</div>
     <h1>Out-of-scope request</h1>
   </div>
-  <div class="expected">
-    <span class="label">Expected</span>
-    <span class="text">Placing new orders is out of scope. Agent should redirect to the website/sales — NOT call check_inventory or any tool.</span>
-  </div>
+  <div class="scenario">Yusuf asks to place a new order for a Bluetooth Speaker. The agent’s scope is post-purchase support (returns, exchanges, replacements) — placing new orders is out of scope, and the correct behavior is to refuse and redirect without calling any tool.</div>
   <div class="compare">
     
     <div class="side before" data-side="before">
