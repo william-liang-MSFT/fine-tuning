@@ -59,7 +59,7 @@ agent.
 2. **Baseline** — measure student and teacher on the same 100 hard scenarios.
 3. **Harvest** — turn the teacher's recent production traffic into SFT examples.
 4. **Fine-tune** — train the student on those examples.
-5. **Re-measure** — re-run the fine-tuned student on the same scenarios and a held-out validation set.
+5. **Re-measure** — re-run the fine-tuned student on the same scenarios and a hold-out set.
 6. **Showcase** — drive the fine-tuned model through 4 representative scenarios end-to-end so you can see the post-training behavior.
 
 All quality numbers are reported as **pass^k @ 0.70**: the fraction of scenarios
@@ -175,7 +175,7 @@ sorted into **categories** — `long_distracting_context`, `restocking_fee_math`
 categories are causing the most pain.
 
 - **Training tasks** (`eval/training_tasks.json`, 80 scenarios) — used to harvest fine-tuning examples.
-- **Validation tasks** (`eval/eval_tasks.json`, 20 scenarios) — held out; the fine-tuned model never sees these during training.
+- **Hold-out tasks** (`eval/eval_tasks.json`, 20 scenarios) — held out; the fine-tuned model never sees these during training.
 """))
 
 CELLS.append(code("""train_scenarios = json.loads((EVAL_DIR / "training_tasks.json").read_text(encoding="utf-8"))
@@ -183,7 +183,7 @@ val_scenarios   = json.loads((EVAL_DIR / "eval_tasks.json").read_text(encoding="
 
 banner("EVALUATION SCENARIOS")
 print(f"   Training tasks    →  {len(train_scenarios)}")
-print(f"   Validation tasks  →  {len(val_scenarios)}   (held out from training)")
+print(f"   Hold-out tasks    →  {len(val_scenarios)}   (held out from training)")
 
 section("Example training scenario (#1)")
 ex = train_scenarios[0]
@@ -532,7 +532,7 @@ banner(f"PASS^k  @  τ = {TAU}",
 
 for set_name, set_title in (
     ("train",      "TRAIN  (80 scenarios)"),
-    ("validation", "VALIDATION  (20 scenarios — held out)"),
+    ("validation", "HOLD-OUT  (20 scenarios — never seen during training)"),
 ):
     print()
     print(f"   {set_title}")
@@ -585,7 +585,7 @@ CELLS.append(code("""def lift_table(set_name: str, title: str) -> None:
 
 lift_table("train",      "Train")
 print()
-lift_table("validation", "Validation / held out")
+lift_table("validation", "Hold-out")
 """))
 
 # =====================================================================
@@ -609,7 +609,7 @@ COLORS  = {"student": "#c0c4cc",  # neutral grey
            "teacher": "#2ca02c"}  # green ceiling
 METRICS = ("pass^1", "pass^2", "pass^3")
 SETS    = (("train", "Train (80 scenarios)"),
-           ("validation", "Validation / held-out (20 scenarios)"))
+           ("validation", "Hold-out (20 scenarios)"))
 
 fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
 x = np.arange(len(METRICS))
@@ -1018,7 +1018,7 @@ CELLS.append(md("""## 9. Takeaways
 
 - Fine-tuning a small model on traces from a strong production agent produced a
   large, consistent lift: roughly **+19 pp** on `pass^3 ≥ 0.7` on the training
-  scenarios and **+40 pp** on the held-out validation scenarios. No mean was
+  scenarios and **+40 pp** on the hold-out scenarios. No mean was
   needed to tell the story — the pass-bar table speaks for itself.
 - The lift was largest on the categories where the student was weakest:
   multi-item mixed outcomes, restocking-fee math, sale + defective edge cases,
